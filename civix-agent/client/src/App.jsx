@@ -1,15 +1,29 @@
 import { useState, useEffect } from 'react'
+import { silentSignIn } from './firebase'
 import './index.css'
 
 function App() {
   const [health, setHealth] = useState(null)
+  const [firebaseUser, setFirebaseUser] = useState(null)
+  const [authStatus, setAuthStatus] = useState('connecting')
 
-  // Verify API proxy works on mount
   useEffect(() => {
+    // Verify API proxy
     fetch('/api/health')
       .then(r => r.json())
       .then(data => setHealth(data))
       .catch(() => setHealth({ status: 'error' }))
+
+    // Silent Firebase Anonymous Auth
+    silentSignIn().then(user => {
+      if (user) {
+        setFirebaseUser(user)
+        setAuthStatus('ok')
+        console.log('[CivixAgent] Anonymous UID:', user.uid)
+      } else {
+        setAuthStatus('error')
+      }
+    })
   }, [])
 
   return (
@@ -30,32 +44,59 @@ function App() {
         </p>
       </div>
 
-      {/* API Health Badge */}
-      <div className="px-4 py-2 rounded-full text-sm font-medium border"
-           style={{
-             background: health?.status === 'ok' ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)',
-             borderColor: health?.status === 'ok' ? 'var(--color-success)' : 'var(--color-danger)',
-             color: health?.status === 'ok' ? 'var(--color-success)' : 'var(--color-danger)',
-           }}>
-        {health === null
-          ? '⏳ Connecting to API...'
-          : health.status === 'ok'
-          ? `✅ API Online — ${health.service}`
-          : '❌ API Offline'}
+      {/* Status Badges */}
+      <div className="flex flex-col gap-3 items-center">
+
+        {/* API Health */}
+        <StatusBadge
+          ok={health?.status === 'ok'}
+          loading={health === null}
+          label={health?.status === 'ok' ? `API Online — ${health.service}` : 'API Offline'}
+          icon="⚡"
+        />
+
+        {/* Firebase Auth */}
+        <StatusBadge
+          ok={authStatus === 'ok'}
+          loading={authStatus === 'connecting'}
+          label={authStatus === 'ok'
+            ? `Firebase Auth — ${firebaseUser?.uid?.slice(0, 12)}...`
+            : authStatus === 'connecting' ? 'Connecting to Firebase...' : 'Firebase Auth Failed'}
+          icon="🔥"
+        />
       </div>
 
-      {/* Tailwind test */}
-      <div className="flex gap-3">
-        <span className="px-3 py-1 rounded-md text-xs font-mono"
-              style={{ background: 'var(--color-surface)', color: 'var(--color-accent)', border: '1px solid var(--color-border)' }}>
-          Phase 1 — Foundation
-        </span>
-        <span className="px-3 py-1 rounded-md text-xs font-mono"
-              style={{ background: 'var(--color-surface)', color: 'var(--color-muted)', border: '1px solid var(--color-border)' }}>
-          Tailwind ✓
-        </span>
+      {/* Phase indicator */}
+      <div className="flex gap-3 flex-wrap justify-center">
+        <Chip color="accent">Phase 1 — Foundation</Chip>
+        <Chip color="muted">Tailwind ✓</Chip>
+        <Chip color="muted">Firebase SDK ✓</Chip>
+        <Chip color="muted">Express Proxy ✓</Chip>
       </div>
     </div>
+  )
+}
+
+function StatusBadge({ ok, loading, label, icon }) {
+  const color = loading ? 'var(--color-muted)' : ok ? 'var(--color-success)' : 'var(--color-danger)'
+  return (
+    <div className="px-4 py-2 rounded-full text-sm font-medium border"
+         style={{
+           background: loading ? 'rgba(148,163,184,0.1)' : ok ? 'rgba(16,185,129,0.1)' : 'rgba(244,63,94,0.1)',
+           borderColor: color,
+           color,
+         }}>
+      {icon} {loading ? '⏳ ' : ok ? '✅ ' : '❌ '}{label}
+    </div>
+  )
+}
+
+function Chip({ children, color }) {
+  return (
+    <span className="px-3 py-1 rounded-md text-xs font-mono"
+          style={{ background: 'var(--color-surface)', color: `var(--color-${color})`, border: '1px solid var(--color-border)' }}>
+      {children}
+    </span>
   )
 }
 
