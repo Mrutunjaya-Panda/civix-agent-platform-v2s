@@ -1,4 +1,4 @@
-﻿# ROADMAP.md — CivixAgent
+# ROADMAP.md — CivixAgent
 
 > **Current Phase**: Not Started
 > **Milestone**: v1.0 — Hackathon Submission
@@ -27,19 +27,20 @@
 
 ### Phase 1: Project Foundation and Infrastructure
 **Status**: Not Started
-**Objective**: Scaffold the full monorepo, configure all Google services, and verify every integration is alive before writing any agent or feature code.
+**Objective**: Scaffold the full monorepo, configure all Google services (billing-free), and verify every integration is alive before writing any agent or feature code.
 **Deliverables**:
 - Vite + React frontend scaffolded with Tailwind CSS and routing skeleton
 - Node.js + Express backend (server.js) with health-check endpoint
-- Firebase project configured (Firestore, Storage, Anonymous Auth)
-- Google Maps JS API key restricted and verified (blank map renders)
-- Gemini API key secured server-side, test call succeeds
-- Cloud Run Dockerfile + build script verified locally
+- Firebase project configured on Spark plan (Firestore, Storage, Anonymous Auth) — no billing card
+- Gemini API key (Google AI Studio, aistudio.google.com) secured server-side, test call succeeds
+- React-Leaflet + OpenStreetMap map renders on Bhubaneswar (no API key, no billing)
+- Dockerfile builds locally and serves app+API on :8080 (Cloud Run deploy deferred to Phase 6)
 - Environment variable management (.env, .env.example)
 - Git repo clean with initial commit
 
-**Requirements**: SPEC Tech Stack, SPEC Constraints (free-tier, single container)
+**Requirements**: SPEC Tech Stack, SPEC Constraints (free-tier dev, single container)
 **Estimated complexity**: Medium — configuration-heavy, no feature code yet
+**Billing note**: Zero billing card steps in this phase. Firebase Spark + AI Studio + Leaflet = 100% free.
 
 ---
 
@@ -50,7 +51,7 @@
 - Firestore collections schema: tickets, clusters, activityFeed, users
 - Firestore security rules (Anonymous Auth-gated writes)
 - onSnapshot listener wired to React map state
-- Google Maps rendering with MarkerClusterer
+- React-Leaflet rendering with Leaflet.markercluster (real Firestore data now)
 - Severity-colored pin system (color scale: green=low, yellow=medium, red=high, grey=resolved)
 - Ticket detail sidebar/modal (static data for now)
 - Firebase Storage upload utility (client-side image compression)
@@ -135,9 +136,11 @@
 - Agent Activity Feed real-time animation (entries slide in, not static)
 - Demo script / flow tested: submit → classify → route → simulate escalation → resolve → confirm
 - Dockerfile finalized (Vite build + Express server in one container)
-- Cloud Run deployment — public URL verified
-- Environment variables set in Cloud Run (Gemini key, Firebase config, Maps key)
-- All API keys domain-restricted to Cloud Run URL
+- Full local+Firebase end-to-end demo flow verified before any cloud deploy
+- Cloud Run deployment — DELIBERATE FINAL STEP (requires billing card for identity verification once)
+  - All env vars set in Cloud Run (Gemini key, Firebase config — no Maps key needed)
+  - Public URL verified: /api/health returns ok, app loads, Firestore onSnapshot works
+  - This is the only billing-card step in the entire project, done once, at the end
 
 **Requirements**: SPEC Demo Seed Data, SPEC Success Criteria (zero errors during demo), SPEC Constraints
 **Dependencies**: Phase 5 complete

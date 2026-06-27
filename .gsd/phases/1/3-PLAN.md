@@ -4,70 +4,79 @@ plan: 3
 wave: 2
 ---
 
-# Plan 1.3: Google Maps Rendering + Dockerfile + Cloud Run Verification
+# Plan 1.3: React-Leaflet Map + Dockerfile Local Verification
 
 ## Objective
-Get Google Maps rendering with a visible centered map pin (Bhubaneswar), verify the unified Vite+Express Docker container builds and runs locally, and confirm the Cloud Run deployment produces a publicly accessible URL. After this plan, Phase 1 is done and the full infrastructure stack is live.
+Get React-Leaflet + OpenStreetMap rendering with a Bhubaneswar-centered map and Leaflet.markercluster initialized (zero API key, zero billing), and verify the unified Vite+Express Dockerfile builds and runs correctly on localhost. Cloud Run deployment is intentionally deferred to Phase 6 — the card step happens once, deliberately, after everything is built and tested.
 
 ## Context
-- .gsd/SPEC.md — Google Maps JS API, MarkerClusterer, Cloud Run single-container deployment
-- .gsd/DECISIONS.md — ADR-007 (MarkerClusterer), SPEC fallback (Leaflet if Maps billing blocks)
+- .gsd/SPEC.md — Maps: React-Leaflet + OpenStreetMap (primary, no API key)
+- .gsd/DECISIONS.md — ADR-007 updated (Leaflet.markercluster), ADR-009 (Cloud Run timing)
 - civix-agent/client/src/ — add Map component
 - civix-agent/ root — Dockerfile, .dockerignore
 
 ## Prerequisites
-- Plan 1.1 and 1.2 must be complete and all services verified
-- Google Maps API key created in Google Cloud Console, restricted to localhost:5173 for dev
-- Google Cloud project with Cloud Run API enabled, gcloud CLI authenticated
+- Plans 1.1 and 1.2 must be complete and all services verified
 
 ## Tasks
 
 <task type="auto">
-  <name>Google Maps component with MarkerClusterer</name>
+  <name>React-Leaflet map component with Leaflet.markercluster</name>
   <files>
-    civix-agent/client/src/components/Map.jsx   ← new
-    civix-agent/client/src/App.jsx              ← import Map component
-    civix-agent/client/index.html               ← add Maps JS API script tag
+    civix-agent/client/src/components/Map.jsx   <- new
+    civix-agent/client/src/App.jsx              <- import Map component
   </files>
   <action>
-    1. cd client && npm install @googlemaps/markerclusterer
-    2. Add Google Maps JS script to client/index.html <head>:
-       <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&libraries=marker" defer></script>
-       Use import.meta.env.VITE_GOOGLE_MAPS_API_KEY — but note: script src needs the key inline in the URL
-       Solution: dynamically inject the script tag from a useEffect in App.jsx using the VITE_ env var
-       so the key is never hardcoded in HTML (stays only in .env)
-    3. Create client/src/components/Map.jsx:
-       - useRef for map div, useEffect to initialize google.maps.Map
-       - Center: { lat: 20.2961, lng: 85.8245 } (Master Canteen Square, Bhubaneswar)
-       - Default zoom: 14
-       - Map style: dark theme (use Google Maps MapId or custom styles array for dark civic aesthetic)
-       - Add one placeholder AdvancedMarkerElement at center coordinates
-       - Initialize MarkerClusterer with empty markers array (ready for Phase 2 data)
-       - Map container: full viewport height minus header (h-[calc(100vh-64px)])
-    4. Update App.jsx to render <Map /> component
-    5. Add VITE_GOOGLE_MAPS_API_KEY to .env and .env.example
-    - Use AdvancedMarkerElement (not deprecated Marker class) — Maps JS API v3.55+
-    - If Maps API key billing setup is a genuine blocker (card required, no free tier): switch to React-Leaflet per SPEC fallback (document the swap)
-    - DO NOT add real ticket data yet — just the map shell with one static pin
-    - Ensure map renders at correct Bhubaneswar coordinates, not defaulting to 0,0
+    1. cd client && npm install react-leaflet leaflet leaflet.markercluster
+    2. Also install types for leaflet (CSS needed):
+       Add to client/src/index.css:
+         @import "leaflet/dist/leaflet.css";
+         @import "leaflet.markercluster/dist/MarkerCluster.css";
+         @import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+    3. Fix Leaflet default icon broken images (known Vite issue):
+       In Map.jsx, before the component:
+         import L from 'leaflet'
+         import iconUrl from 'leaflet/dist/images/marker-icon.png'
+         import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
+         import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
+         delete L.Icon.Default.prototype._getIconUrl
+         L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl })
+    4. Create client/src/components/Map.jsx:
+       - Use <MapContainer> from react-leaflet, center: [20.2961, 85.8245], zoom: 14
+       - <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' />
+       - Use useRef + useEffect to initialize MarkerClusterGroup from leaflet.markercluster:
+           const mcg = L.markerClusterGroup()
+           mapRef.current.addLayer(mcg)  <- ready for Phase 2 data binding
+       - Add one placeholder L.marker([20.2961, 85.8245]).bindPopup('CivixAgent HQ').addTo(map)
+       - Dark map aesthetic: use CartoDB dark tiles instead of OSM default:
+           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
+       - Map container: h-[calc(100vh-64px)] w-full
+    5. Update App.jsx to render <Map /> component
+    - DO NOT use @googlemaps/markerclusterer — that is the Google Maps library
+    - USE leaflet.markercluster (the Leaflet-native clustering library)
+    - CartoDB dark tiles require no API key and are free for open-source/hackathon use
+    - DO NOT add real ticket data yet — just the map shell with one static marker
+    - The map must NOT show a grey blank square — common cause is missing Leaflet CSS imports
   </action>
   <verify>
-    Browser at localhost:5173 → Google Maps renders centered on Bhubaneswar with visible dark theme, one marker pin visible at city center. No "This page can't load Google Maps correctly" error banner.
+    Browser at localhost:5173: Dark-themed map renders centered on Bhubaneswar (20.2961, 85.8245). One marker visible at city center. Clicking marker shows "CivixAgent HQ" popup. No console errors about icon images or missing CSS.
   </verify>
   <done>
-    - Map renders at correct Bhubaneswar coordinates (20.2961, 85.8245)
-    - Dark theme applied (not default light map)
-    - MarkerClusterer initialized (no console errors about undefined)
-    - VITE_GOOGLE_MAPS_API_KEY not visible in committed source code
+    - Map renders at correct Bhubaneswar coordinates on dark CartoDB tiles
+    - Marker icon displays correctly (not broken image)
+    - MarkerClusterGroup initialized (no console errors)
+    - Zero API keys required — confirmed by checking .env.example has no MAPS key
   </done>
 </task>
 
 <task type="auto">
-  <name>Dockerfile + local container build + Cloud Run deploy</name>
+  <name>Dockerfile + local container build verification (dev only)</name>
   <files>
-    civix-agent/Dockerfile           ← new
-    civix-agent/.dockerignore        ← new
-    civix-agent/server/server.js     ← update to serve Vite build in production
+    civix-agent/Dockerfile           <- new
+    civix-agent/.dockerignore        <- new
+    civix-agent/server/server.js     <- update to serve Vite build in production
   </files>
   <action>
     DOCKERFILE (multi-stage):
@@ -91,12 +100,12 @@ Get Google Maps rendering with a visible centered map pin (Bhubaneswar), verify 
       ENV PORT=8080
       CMD ["node", "server/server.js"]
 
-    UPDATE server.js for production:
+    UPDATE server/server.js for production mode:
       const path = require('path')
-      In production (NODE_ENV=production), serve static files:
+      When NODE_ENV=production:
         app.use(express.static(path.join(__dirname, '../client/dist')))
         app.get('*', (req, res) => res.sendFile(path.join(__dirname, '../client/dist/index.html')))
-      IMPORTANT: Static serving must come AFTER all /api routes, not before
+      CRITICAL: Static serving catch-all must come AFTER all /api/* routes
 
     .dockerignore:
       node_modules/
@@ -104,59 +113,41 @@ Get Google Maps rendering with a visible centered map pin (Bhubaneswar), verify 
       .git/
       client/node_modules/
       server/node_modules/
+      client/dist/
 
-    LOCAL TEST:
+    LOCAL TEST ONLY (no Cloud Run yet):
       docker build -t civix-agent .
       docker run -p 8080:8080 --env-file .env -e NODE_ENV=production civix-agent
-      curl http://localhost:8080/api/health → {"status":"ok",...}
-      Browser http://localhost:8080 → Vite app loads (Maps won't work yet — key restricted to Cloud Run URL)
+      curl http://localhost:8080/api/health
 
-    CLOUD RUN DEPLOY:
-      gcloud run deploy civix-agent \
-        --source . \
-        --region asia-south1 \
-        --allow-unauthenticated \
-        --set-env-vars="GEMINI_API_KEY=...,FIREBASE_PROJECT_ID=...,..." \
-        --platform managed
-      (Use --source for automatic buildpack detection, or push container manually with gcloud builds submit)
-    
-    - PORT must be 8080 — Cloud Run requires this
-    - NODE_ENV=production must be set in Cloud Run env vars
-    - All .env values must be set as Cloud Run env vars (not in Dockerfile — never commit secrets)
-    - After Cloud Run URL is known: update Google Maps API key restriction to allow the Cloud Run domain
+    - PORT must be 8080 — Cloud Run will require this later
+    - NODE_ENV=production must work correctly — test it locally now
+    - DO NOT push to Cloud Run in this plan — that is Phase 6 only
+    - If Docker Desktop is not installed locally, skip the docker run test and just
+      verify the Dockerfile syntax is valid: docker build succeeds = good enough for Phase 1
   </action>
   <verify>
-    1. docker run locally: curl http://localhost:8080/api/health → {"status":"ok"}
-    2. Cloud Run URL (e.g. https://civix-agent-xxxx.run.app/api/health) → {"status":"ok"}
-    3. Cloud Run URL loads the Vite React app in browser (no blank page)
-    4. gcloud run services describe civix-agent → status: Ready
+    docker build -t civix-agent . completes without errors (all layers cached properly).
+    docker run -p 8080:8080 --env-file .env -e NODE_ENV=production civix-agent:
+    curl http://localhost:8080/api/health → {"status":"ok","service":"CivixAgent API"}
+    Browser http://localhost:8080 → Vite React app loads with Leaflet map visible.
   </verify>
   <done>
     - Dockerfile builds without errors
-    - Local container serves both /api/health and the Vite frontend on :8080
-    - Cloud Run service is deployed and publicly accessible
-    - /api/health returns ok on the public Cloud Run URL
-    - NODE_ENV=production confirmed in Cloud Run service env vars
+    - Local container serves /api/health on :8080
+    - Local container serves the Vite frontend on :8080 (not just the API)
+    - Leaflet map renders correctly inside the container
+    - No secrets baked into the Docker image (verified: docker inspect shows no env keys)
   </done>
 </task>
 
-<task type="checkpoint:human-verify">
-  <name>Phase 1 full stack verification</name>
-  <action>
-    User verifies the complete Phase 1 stack is functional:
-    1. Open the Cloud Run public URL in browser — does the app load?
-    2. Open browser devtools Network tab — is GEMINI_API_KEY or FIREBASE_PRIVATE_KEY visible anywhere? (Must be NO)
-    3. Open Firebase console — does the healthCheck Firestore collection have a document?
-    4. Is the map centered on Bhubaneswar (not a blank grey square or 0,0 coordinates)?
-    Report pass/fail for each check.
-  </action>
-  <verify>User confirms all 4 checks pass</verify>
-  <done>All infrastructure verified live. Ready for Phase 2.</done>
-</task>
-
 ## Success Criteria
-- [ ] Google Maps renders on localhost:5173 centered on Bhubaneswar with dark theme
-- [ ] Dockerfile builds locally and container serves app + API on :8080
-- [ ] Cloud Run public URL accessible and returns ok on /api/health
-- [ ] Zero secrets visible in browser devtools or committed source code
-- [ ] User confirms all 4 checkpoint checks pass
+- [ ] React-Leaflet dark map renders on localhost:5173 centered on Bhubaneswar
+- [ ] Marker icon displays correctly (not broken), popup works
+- [ ] MarkerClusterGroup initialized with no console errors
+- [ ] Dockerfile builds successfully and container passes /api/health check
+- [ ] Container serves Vite frontend correctly on :8080
+- [ ] Zero API keys or billing setup required for any of the above
+
+## Note on Cloud Run
+Cloud Run deployment is intentionally NOT in this plan. It will be the final task of Phase 6, after the full application is built, all features tested locally and on Firebase, seed data loaded, and the demo flow verified end-to-end. The card step happens once, deliberately, at the very end.

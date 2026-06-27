@@ -1,4 +1,4 @@
-﻿# SPEC.md — CivixAgent Project Specification
+# SPEC.md — CivixAgent Project Specification
 
 > **Status**: `FINALIZED`
 > **Hackathon**: Coding Ninjas x Google for Developers — Vibe2Ship
@@ -54,14 +54,15 @@ Local authority persona who views AI-drafted, categorized, prioritized grievance
 |-------|-----------|---------|
 | Frontend | React (Vite) + Tailwind CSS | — |
 | Backend/Orchestration | Node.js + Express (single server.js) | — |
-| AI/LLM | Gemini 2.5 Flash (multimodal, responseSchema, function calling) | Google AI Studio free-tier key |
+| AI/LLM | Gemini 2.5 Flash via Google AI Studio API key (aistudio.google.com — no billing card) | — |
 | Database + Realtime | Firebase Firestore (onSnapshot listeners) | Supabase (last resort) |
 | Image Storage | Firebase Storage (client-side compressed before upload) | — |
 | Auth | Firebase Anonymous Auth (citizens); passphrase toggle (Municipal Worker) | localStorage UUID (last resort) |
-| Maps | Google Maps JS API + @googlemaps/markerclusterer | React-Leaflet + OpenStreetMap |
+| Maps | React-Leaflet + OpenStreetMap + Leaflet.markercluster (no API key, no billing) | Google Maps JS API (if available) |
 | Hosting | Google Cloud Run (Vite + Express unified container) | Vercel/Render (last resort) |
 
-Fallback priority (highest cost to swap to lowest): Gemini API → Cloud Run → Firestore → Maps Platform
+Fallback priority (highest cost to swap to lowest): Gemini API → Cloud Run → Firestore
+Note on billing: Gemini (AI Studio key, free), Firestore/Auth/Storage (Firebase Spark plan, free), Maps (Leaflet, free). Cloud Run requires card for identity verification — deliberately deferred to the FINAL phase only.
 
 ---
 
@@ -100,8 +101,8 @@ Fallback priority (highest cost to swap to lowest): Gemini API → Cloud Run →
 - Drafts structured grievance brief (ticket card view + email body format) via Gemini function-calling
 - Monitors simulated ticket age vs. SLA thresholds:
   - HIGH severity (7-10): escalate after 24 simulated hours
-  - MEDIUM severity (4-6): escalate after 48 simulated hours
-  - LOW severity (1-3): flag stalled after 72 simulated hours
+  - MEDIUM severity (4-6.9): escalate after 48 simulated hours
+  - LOW severity (1-3.9): flag stalled after 72 simulated hours
 - Each "Simulate Time" button click = +6 simulated hours
 - Emits: ROUTING_UPDATED
 

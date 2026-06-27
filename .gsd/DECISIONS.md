@@ -43,3 +43,15 @@
 **Date**: 2026-06-27
 **Decision**: Roads, Water, Electricity, Sanitation only for v1. Architecture is config-driven.
 **Reason**: Keeps scope tight for hackathon. Adding new categories in future requires only a routing table config entry.
+
+## ADR-009: React-Leaflet + OpenStreetMap as Primary Map (Google Maps demoted to optional)
+**Date**: 2026-06-27
+**Decision**: React-Leaflet + OpenStreetMap + Leaflet.markercluster as the primary and only map implementation
+**Reason**: Google Maps Platform requires billing card even for free-tier quota. Leaflet requires zero API key, zero billing, and zero risk of "billing not enabled" errors during development. For a hackathon, eliminating a potential show-stopping setup blocker is more valuable than the marginal visual difference. CartoDB dark tiles provide the same premium dark aesthetic without any API key.
+**Impact on scoring**: Leaflet does not count as a Google Technology touchpoint. However, Gemini + Firestore + Cloud Run represent three strong Google touchpoints — sufficient for the 15% Google Technologies criterion without Maps.
+
+## ADR-010: Cloud Run Billing Card Step Deliberately Deferred to Phase 6
+**Date**: 2026-06-27
+**Decision**: Cloud Run deployment is the LAST action of the entire project (end of Phase 6)
+**Reason**: Cloud Run requires billing account setup (card for identity verification). By deferring it to the final phase, the card step happens exactly once, deliberately, after the complete application is built and locally verified. This prevents billing setup from blocking or interrupting development work. All development and testing runs on Firebase (free Spark plan) + localhost.
+**Process**: Full end-to-end demo flow must be verified locally and on Firebase before the gcloud deploy command is run.
