@@ -1,0 +1,31 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is authenticated (Anonymous Auth)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    match /tickets/{ticketId} {
+      // Anyone can read tickets (for the public community map)
+      allow read: if true;
+      // Only authenticated users (citizens or municipal workers) can create/update tickets
+      allow write: if isAuthenticated();
+    }
+
+    match /clusters/{clusterId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
+    match /activityFeed/{feedId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    
+    match /users/{userId} {
+      // Users can only read/write their own document
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+  }
+}

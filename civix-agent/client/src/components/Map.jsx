@@ -20,7 +20,7 @@ const BHUBANESWAR_CENTER = [20.2961, 85.8245]
 const DEFAULT_ZOOM = 14
 
 // ── MarkerCluster initializer (inner component, has access to map instance) ──
-function MarkerClusterLayer({ tickets }) {
+function MarkerClusterLayer({ tickets, onMarkerClick }) {
   const map = useMap()
   const clusterRef = useRef(null)
 
@@ -47,31 +47,63 @@ function MarkerClusterLayer({ tickets }) {
     // Clear existing markers
     clusterRef.current.clearLayers()
 
-    // Add a placeholder marker at Bhubaneswar center (Phase 2+ will add real ticket pins)
-    const placeholderMarker = L.marker(BHUBANESWAR_CENTER)
-      .bindPopup(`
-        <div style="font-family: Inter, sans-serif; min-width: 160px;">
-          <strong style="color: #6366f1;">CivixAgent</strong><br/>
-          <small style="color: #64748b;">Master Canteen Square</small><br/>
-          <small style="color: #64748b;">Bhubaneswar, Odisha</small>
-        </div>
-      `, { maxWidth: 250 })
+    // Add markers for all tickets
+    tickets.forEach((ticket) => {
+      if (!ticket.location || !ticket.location.lat || !ticket.location.lng) return;
 
-    clusterRef.current.addLayer(placeholderMarker)
+      // Determine pin color based on severity and status
+      let bgColor = '#22c55e'; // Green (Low)
+      let borderColor = '#14532d';
+      
+      if (ticket.status === 'resolved') {
+        bgColor = '#64748b'; // Grey
+        borderColor = '#334155';
+      } else if (ticket.severity >= 7) {
+        bgColor = '#ef4444'; // Red (High)
+        borderColor = '#7f1d1d';
+      } else if (ticket.severity >= 4) {
+        bgColor = '#eab308'; // Yellow (Medium)
+        borderColor = '#713f12';
+      }
+
+      const html = `
+        <div style="
+          background-color: ${bgColor};
+          border: 2px solid ${borderColor};
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          box-shadow: 0 0 10px ${bgColor}80;
+        "></div>
+      `;
+
+      const customIcon = L.divIcon({
+        html,
+        className: '',
+        iconSize: L.point(20, 20),
+        iconAnchor: L.point(10, 10)
+      });
+
+      const marker = L.marker([ticket.location.lat, ticket.location.lng], { icon: customIcon })
+      
+      marker.on('click', () => {
+        if (onMarkerClick) onMarkerClick(ticket);
+      });
+
+      clusterRef.current.addLayer(marker)
+    });
 
     return () => {
-      if (clusterRef.current) {
-        map.removeLayer(clusterRef.current)
-        clusterRef.current = null
-      }
+      // We don't want to recreate the cluster group entirely on every re-render,
+      // but we do want to clear layers. We'll leave the group on the map.
     }
-  }, [map, tickets])
+  }, [map, tickets, onMarkerClick])
 
   return null
 }
 
 // ── Main Map component ────────────────────────────────────────────────────────
-export default function Map({ tickets = [] }) {
+export default function Map({ tickets = [], onMarkerClick }) {
   return (
     <div style={{ height: 'calc(100vh - 64px)', width: '100%', position: 'relative' }}>
       <MapContainer
@@ -90,7 +122,7 @@ export default function Map({ tickets = [] }) {
         />
 
         {/* Marker cluster layer */}
-        <MarkerClusterLayer tickets={tickets} />
+        <MarkerClusterLayer tickets={tickets} onMarkerClick={onMarkerClick} />
       </MapContainer>
 
       {/* Map overlay — city label */}
