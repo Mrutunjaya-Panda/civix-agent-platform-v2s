@@ -56,13 +56,14 @@ Local authority persona who views AI-drafted, categorized, prioritized grievance
 | Backend/Orchestration | Node.js + Express (single server.js) | — |
 | AI/LLM | Gemini 2.5 Flash via Google AI Studio API key (aistudio.google.com — no billing card) | — |
 | Database + Realtime | Firebase Firestore (onSnapshot listeners) | Supabase (last resort) |
-| Image Storage | Firebase Storage (client-side compressed before upload) | — |
+| Image Storage | Cloudinary free tier (cloudinary.com — 25GB free, no credit card) | — |
 | Auth | Firebase Anonymous Auth (citizens); passphrase toggle (Municipal Worker) | localStorage UUID (last resort) |
 | Maps | React-Leaflet + OpenStreetMap + Leaflet.markercluster (no API key, no billing) | Google Maps JS API (if available) |
 | Hosting | Google Cloud Run (Vite + Express unified container) | Vercel/Render (last resort) |
 
 Fallback priority (highest cost to swap to lowest): Gemini API → Cloud Run → Firestore
-Note on billing: Gemini (AI Studio key, free), Firestore/Auth/Storage (Firebase Spark plan, free), Maps (Leaflet, free). Cloud Run requires card for identity verification — deliberately deferred to the FINAL phase only.
+Note on billing: Gemini (AI Studio key, free), Firestore + Auth (Firebase Spark plan, free), Image Storage (Cloudinary free tier, no card), Maps (Leaflet, free). Cloud Run requires card for identity verification — deliberately deferred to the FINAL phase only.
+Note on Firebase Storage: Firebase Storage now requires Blaze (paid) plan — replaced with Cloudinary. ADR-011.
 
 ---
 

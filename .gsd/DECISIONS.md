@@ -55,3 +55,13 @@
 **Decision**: Cloud Run deployment is the LAST action of the entire project (end of Phase 6)
 **Reason**: Cloud Run requires billing account setup (card for identity verification). By deferring it to the final phase, the card step happens exactly once, deliberately, after the complete application is built and locally verified. This prevents billing setup from blocking or interrupting development work. All development and testing runs on Firebase (free Spark plan) + localhost.
 **Process**: Full end-to-end demo flow must be verified locally and on Firebase before the gcloud deploy command is run.
+
+## ADR-011: Cloudinary Replaces Firebase Storage for Image Uploads
+**Date**: 2026-06-28
+**Decision**: Use Cloudinary free tier for all civic issue image uploads, instead of Firebase Storage
+**Reason**: Firebase Storage now requires upgrading to the Blaze (pay-as-you-go) plan — even for free-quota usage — which requires a credit card. This breaks the zero-card dev principle. Cloudinary offers a permanently free tier (25GB/month) with no credit card required at signup. Images are uploaded directly from the browser (unsigned upload preset), Cloudinary returns a secure public URL, that URL is stored in the Firestore ticket doc and passed to Gemini Vision.
+**Impact**: 
+- Remove FIREBASE_STORAGE_BUCKET references (still present in VITE_ config for future use, but storage.js client not used)
+- Add CLOUDINARY_CLOUD_NAME to .env (client-safe, no secret needed for unsigned uploads)
+- Client upload flow: compress image client-side → POST to https://api.cloudinary.com/v1_1/{cloud_name}/image/upload → get back secure_url
+- Server gemini.js: receives the Cloudinary URL, passes as fileData.fileUri to Gemini Vision (public URL works directly)
