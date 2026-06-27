@@ -1,7 +1,7 @@
 ---
 phase: 2
 plan: 3
-wave: 2
+wave: 3
 ---
 
 # Plan 2.3: Persona Switcher & UI Components

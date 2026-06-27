@@ -1,7 +1,7 @@
 ---
 phase: 2
 plan: 2
-wave: 1
+wave: 2
 ---
 
 # Plan 2.2: Live Map Data Binding & Severity Pins

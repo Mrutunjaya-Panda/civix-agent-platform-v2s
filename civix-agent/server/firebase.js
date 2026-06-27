@@ -1,38 +1,36 @@
 /**
- * firebase.js — Server-side Firebase Admin SDK singleton
- * Initializes once; imported by all agent modules that need Firestore or Storage.
- * Credentials come from environment variables ONLY — never hardcoded.
+ * firebase.js — Server-side Firebase Admin SDK singleton (v13 modular API)
+ * firebase-admin v13 exports initializeApp, cert, getApps at the top level.
+ * Subservices are imported from firebase-admin/firestore, firebase-admin/storage.
  */
-const admin = require('firebase-admin');
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
+const { getFirestore }                 = require('firebase-admin/firestore');
 
-if (!admin.apps.length) {
+// Guard against double-initialization (nodemon hot-reload)
+if (!getApps().length) {
   const privateKey = process.env.FIREBASE_PRIVATE_KEY
     ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
     : undefined;
 
   if (!process.env.FIREBASE_PROJECT_ID || !privateKey || !process.env.FIREBASE_CLIENT_EMAIL) {
     throw new Error(
-      '[firebase.js] Missing required env vars: FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL\n' +
+      '[firebase.js] Missing env vars: FIREBASE_PROJECT_ID, FIREBASE_PRIVATE_KEY, FIREBASE_CLIENT_EMAIL\n' +
       'Copy .env.example → .env and fill in your Firebase Admin SDK credentials.'
     );
   }
 
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
+  initializeApp({
+    credential: cert({
+      projectId:   process.env.FIREBASE_PROJECT_ID,
       privateKey,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     }),
-    storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`,
   });
 
   console.log(`[Firebase] Admin SDK initialized — project: ${process.env.FIREBASE_PROJECT_ID}`);
 }
 
-const db = admin.firestore();
-const storage = admin.storage();
-
-// Firestore settings — disable deprecated timestamp warnings
+const db = getFirestore();
 db.settings({ ignoreUndefinedProperties: true });
 
-module.exports = { db, storage, admin };
+module.exports = { db };

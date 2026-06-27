@@ -36,7 +36,7 @@ async function structuredCall({ parts, schema, system }) {
     },
   });
 
-  const text = response.text();
+  const text = typeof response.text === 'function' ? response.text() : response.text;
   try {
     return JSON.parse(text);
   } catch {

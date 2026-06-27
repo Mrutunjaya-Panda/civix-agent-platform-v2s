@@ -4,7 +4,7 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
 // ── Initialize singletons (validates env vars on startup) ─────────────────────
-const { db, storage } = require('./firebase');
+const { db } = require('./firebase');
 const { structuredCall } = require('./gemini');
 
 const app = express();
