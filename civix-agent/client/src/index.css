@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+/* ── CivixAgent Global Styles ──────────────────────────────────────────────── */
+
+:root {
+  --color-primary: #6366f1;      /* indigo-500 */
+  --color-primary-dark: #4f46e5; /* indigo-600 */
+  --color-accent: #22d3ee;       /* cyan-400 */
+  --color-danger: #f43f5e;       /* rose-500 */
+  --color-warning: #f59e0b;      /* amber-500 */
+  --color-success: #10b981;      /* emerald-500 */
+  --color-bg: #0f172a;           /* slate-900 */
+  --color-surface: #1e293b;      /* slate-800 */
+  --color-border: #334155;       /* slate-700 */
+  --color-text: #f1f5f9;         /* slate-100 */
+  --color-muted: #94a3b8;        /* slate-400 */
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Leaflet CSS imports — added in Phase 1.3 */

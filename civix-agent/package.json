@@ -1,0 +1,26 @@
+{
+    "version": "1.0.0",
+    "license": "MIT",
+    "keywords": [
+        "civic",
+        "ai",
+        "gemini",
+        "firebase",
+        "hackathon"
+    ],
+    "scripts": {
+        "build": "cd client && npm run build",
+        "dev:server": "cd server && npm run dev",
+        "dev:client": "cd client && npm run dev",
+        "start": "cd server && npm start",
+        "dev": "concurrently -n CLIENT,SERVER -c cyan,green \"npm run dev:client\" \"npm run dev:server\"",
+        "seed": "node scripts/seed.js"
+    },
+    "name": "civix-agent",
+    "private": true,
+    "author": "CivixAgent Team",
+    "description": "CivixAgent - Autonomous Hyperlocal Civic Issue Manager",
+    "devDependencies": {
+        "concurrently": "^10.0.3"
+    }
+}
