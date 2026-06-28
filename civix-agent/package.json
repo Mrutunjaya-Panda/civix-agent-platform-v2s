@@ -14,7 +14,7 @@
         "dev:client": "cd client && npm run dev",
         "start": "cd server && npm start",
         "dev": "concurrently -n CLIENT,SERVER -c cyan,green \"npm run dev:client\" \"npm run dev:server\"",
-        "seed": "node scripts/seed.js"
+        "seed": "node server/scripts/seed.js"
     },
     "name": "civix-agent",
     "private": true,
