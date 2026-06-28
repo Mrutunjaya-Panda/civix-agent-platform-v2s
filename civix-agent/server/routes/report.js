@@ -3,6 +3,7 @@ const router = express.Router();
 const { db } = require('../firebase');
 const { triageReport } = require('../agents/triage');
 const { findNearbyTickets, severityBand } = require('../agents/dedup');
+const { draftGrievanceBrief } = require('../agents/routing');
 
 /**
  * POST /api/report
@@ -124,7 +125,8 @@ router.post('/report', async (req, res) => {
 
     console.log(`[/api/report] New ticket created: id=${ticketRef.id}, category=${category}, severity=${initialSeverity}`);
 
-    return res.json({
+    // Send response to client immediately to preserve <15s latency
+    res.json({
       status: 'ok',
       ticketId: ticketRef.id,
       category,
@@ -133,6 +135,26 @@ router.post('/report', async (req, res) => {
       reasoning,
       department,
     });
+
+    // ── Step 4: Async Routing & Brief Generation (Agent 2) ───────────────────
+    (async () => {
+      try {
+        const brief = await draftGrievanceBrief(newTicket);
+        await ticketRef.update({ brief, updatedAt: new Date().toISOString() });
+        
+        await db.collection('activityFeed').add({
+          type: 'ROUTING',
+          message: `Grievance brief drafted and routed to ${department}`,
+          ticketId: ticketRef.id,
+          createdAt: new Date().toISOString(),
+        });
+        console.log(`[/api/report] Background routing complete for ${ticketRef.id}`);
+      } catch (err) {
+        console.error(`[/api/report] Background routing failed for ${ticketRef.id}:`, err);
+      }
+    })();
+
+    return;
 
   } catch (err) {
     console.error('[/api/report] Error during triage:', err);

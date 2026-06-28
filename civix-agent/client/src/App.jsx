@@ -12,6 +12,7 @@ function App() {
   const [persona, setPersona] = useState('citizen')
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [simulatingTime, setSimulatingTime] = useState(false)
 
   const { tickets, loading, error } = useTickets()
 
@@ -48,6 +49,37 @@ function App() {
 
       {selectedTicket && (
         <TicketDetail ticket={selectedTicket} onClose={() => setSelectedTicket(null)} />
+      )}
+
+      {/* Floating Simulate Time Button — Worker only */}
+      {persona === 'worker' && (
+        <button
+          onClick={async () => {
+            setSimulatingTime(true);
+            try {
+              await fetch('/api/simulate-time', { method: 'POST' });
+            } catch (err) {
+              console.error(err);
+            } finally {
+              setSimulatingTime(false);
+            }
+          }}
+          disabled={simulatingTime}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-sm text-white shadow-2xl transition-transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:scale-100"
+          style={{ background: 'linear-gradient(135deg, #f59e0b, #ea580c)' }}
+        >
+          {simulatingTime ? (
+            <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+          ) : (
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          )}
+          {simulatingTime ? 'Simulating...' : 'Simulate Time (+6h)'}
+        </button>
       )}
 
       {/* Floating Report Button — Citizen only */}

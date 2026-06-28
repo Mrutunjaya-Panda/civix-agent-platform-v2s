@@ -1,0 +1,92 @@
+const express = require('express');
+const router = express.Router();
+const { db } = require('../firebase');
+const { draftGrievanceBrief } = require('../agents/routing');
+
+/**
+ * POST /api/simulate-time
+ * Adds +6 hours to all open tickets and evaluates SLA thresholds.
+ */
+router.post('/simulate-time', async (req, res) => {
+  try {
+    const snapshot = await db.collection('tickets').where('status', '!=', 'resolved').get();
+    
+    if (snapshot.empty) {
+      return res.json({ status: 'ok', message: 'No open tickets to simulate time for.' });
+    }
+
+    const batch = db.batch();
+    const escalatedTickets = [];
+    const feedEntries = [];
+    const timestamp = new Date().toISOString();
+
+    for (const doc of snapshot.docs) {
+      const ticket = doc.data();
+      const currentAge = ticket.simulatedAge || 0;
+      const newAge = currentAge + 6;
+      
+      const updates = {
+        simulatedAge: newAge,
+        updatedAt: timestamp
+      };
+
+      // SLA logic
+      let needsEscalation = false;
+      let newStatus = ticket.status;
+
+      if (ticket.status !== 'escalated' && ticket.status !== 'stalled') {
+        if (ticket.severity >= 7 && newAge >= 24) {
+          needsEscalation = true;
+          newStatus = 'escalated';
+        } else if (ticket.severity >= 4 && ticket.severity < 7 && newAge >= 48) {
+          needsEscalation = true;
+          newStatus = 'escalated';
+        } else if (ticket.severity < 4 && newAge >= 72) {
+          needsEscalation = true;
+          newStatus = 'stalled';
+        }
+      }
+
+      if (needsEscalation) {
+        updates.status = newStatus;
+        
+        // Background generation of urgent brief
+        // Since we are iterating, we will generate the brief inline. 
+        // For a hackathon demo, we want it to be ready. It might take a few seconds,
+        // but that's okay for the "Simulate Time" button.
+        const urgentBrief = await draftGrievanceBrief({ ...ticket, status: newStatus }, true);
+        updates.brief = urgentBrief;
+        
+        const feedMessage = newStatus === 'escalated' 
+          ? `Ticket unresolved past SLA threshold (${newAge}h) → autonomously escalated to Tier 2`
+          : `Ticket unresolved past SLA threshold (${newAge}h) → marked as stalled`;
+
+        const feedRef = db.collection('activityFeed').doc();
+        batch.set(feedRef, {
+          type: 'ESCALATION',
+          message: feedMessage,
+          ticketId: doc.id,
+          createdAt: timestamp
+        });
+
+        escalatedTickets.push({ id: doc.id, newStatus, newAge });
+      }
+
+      batch.update(doc.ref, updates);
+    }
+
+    await batch.commit();
+
+    return res.json({ 
+      status: 'ok', 
+      processed: snapshot.size, 
+      escalated: escalatedTickets 
+    });
+
+  } catch (err) {
+    console.error('[/api/simulate-time] Error:', err);
+    return res.status(500).json({ error: `Time simulation failed: ${err.message}` });
+  }
+});
+
+module.exports = router;

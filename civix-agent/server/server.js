@@ -9,6 +9,7 @@ const { structuredCall } = require('./gemini');
 
 // ── Agent Routes ──────────────────────────────────────────────────────────────
 const reportRouter = require('./routes/report');
+const escalationRouter = require('./routes/escalation');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -83,6 +84,7 @@ app.post('/api/gemini-test', async (req, res) => {
 
 // ── Mount agent routes ───────────────────────────────────────────────────────
 app.use('/api', reportRouter);
+app.use('/api', escalationRouter);
 
 app.post('/api/verify', (req, res) => {
   res.status(503).json({ error: 'Verification endpoint not yet implemented (Phase 5)' });
