@@ -9,6 +9,7 @@ client/build/
 
 # Secrets — NEVER commit
 .env
+sa.json
 
 # Logs
 *.log
