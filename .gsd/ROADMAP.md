@@ -129,7 +129,7 @@
   - 3 duplicate pairs (cluster dedup demo)
   - 1 pre-stalled LOW ticket (70 simulated hours old, shown Stalled on load)
   - 1 HIGH pothole cluster at Tier 2 escalation
-  - 1 resolved water leakage with citizen confirmation
+  - 1 resolved water leakage left in the **unconfirmed** state (so the live demo can show the confirmation UI flow)
   - Demo Data visual distinction (subtle pin marker + badge)
 - Full visual design polish (dark mode, glassmorphism, smooth animations, micro-interactions)
 - Mobile-responsive layout verified on 375px viewport
