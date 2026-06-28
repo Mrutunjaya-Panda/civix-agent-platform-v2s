@@ -25,7 +25,7 @@ Provide real-time feedback to the citizen when their issue is resolved. The citi
   </files>
   <action>
     1. **Backend**: Add a small `POST /api/confirm` endpoint that takes `ticketId`, sets `status` to `closed`, and logs to `activityFeed` ("Ticket closed. Loop complete.").
-    2. **Backend (Timeout Fallback)**: Update the `/api/simulate-time` (Agent 2 SLA monitor) logic. If a ticket is `resolved` but not `closed`, and 72 simulated hours pass, auto-close it with an Activity Feed log: *"Citizen confirmation timeout (72h) → auto-closed"*. Alternatively, if we added a 'dispute' button, it would re-escalate, but auto-close is the safest default fallback to prevent a dead-end state.
+    2. **Backend (Timeout Fallback)**: Update the `/api/simulate-time` (Agent 2 SLA monitor) logic. If a ticket is `resolved` but not `closed`, check its age relative to when it was resolved (i.e. `ticket.simulatedAge - ticket.resolvedAtAge >= 72`). If 72 simulated hours have passed *since resolution*, auto-close it with an Activity Feed log: *"Citizen confirmation timeout (72h) → auto-closed"*. Note: `/api/verify` will need to record `resolvedAtAge = ticket.simulatedAge` when marking it resolved.
     3. **Frontend Toast**: In `App.jsx`, listen to changes in `tickets`. If a ticket authored by the current `firebaseUser.uid` transitions to `status === 'resolved'`, show a temporary in-app toast message: "Your issue has been marked as Repaired! Click to view."
     4. **TicketDetail UI**: In `TicketDetail.jsx`, if `persona === 'citizen'` and `ticket.status === 'resolved'`:
        - Display the Agent 3 generated `recap` text.
