@@ -7,6 +7,9 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const { db } = require('./firebase');
 const { structuredCall } = require('./gemini');
 
+// ── Agent Routes ──────────────────────────────────────────────────────────────
+const reportRouter = require('./routes/report');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
@@ -78,10 +81,8 @@ app.post('/api/gemini-test', async (req, res) => {
   }
 });
 
-// Agent route stubs — implemented in Phases 3-5
-app.post('/api/report', (req, res) => {
-  res.status(503).json({ error: 'Triage Agent not yet implemented (Phase 3)' });
-});
+// ── Mount agent routes ───────────────────────────────────────────────────────
+app.use('/api', reportRouter);
 
 app.post('/api/verify', (req, res) => {
   res.status(503).json({ error: 'Verification endpoint not yet implemented (Phase 5)' });
