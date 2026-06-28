@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { silentSignIn } from './firebase'
 import './index.css'
 import Map from './components/Map'
@@ -13,6 +13,10 @@ function App() {
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [showReportModal, setShowReportModal] = useState(false)
   const [simulatingTime, setSimulatingTime] = useState(false)
+  const [toastMessage, setToastMessage] = useState(null)
+  
+  // Ref to track previous tickets for transition detection
+  const prevTicketsRef = useRef([]);
 
   const { tickets, loading, error } = useTickets()
 
@@ -21,6 +25,33 @@ function App() {
       if (user) setFirebaseUser(user)
     })
   }, [])
+
+  // Detect status transitions for the toast notification
+  useEffect(() => {
+    if (!firebaseUser || !tickets.length) {
+      prevTicketsRef.current = tickets;
+      return;
+    }
+
+    const prevTickets = prevTicketsRef.current;
+    
+    // Only check if we had tickets before (avoids firing on initial load)
+    if (prevTickets.length > 0) {
+      tickets.forEach(ticket => {
+        // Only care about tickets this user reported
+        if (ticket.reportedBy === firebaseUser.uid) {
+          const prev = prevTickets.find(t => t.id === ticket.id);
+          // If it just transitioned to resolved
+          if (prev && prev.status !== 'resolved' && ticket.status === 'resolved') {
+            setToastMessage('Your issue has been marked as Repaired! Click the pin to view.');
+            setTimeout(() => setToastMessage(null), 8000);
+          }
+        }
+      });
+    }
+
+    prevTicketsRef.current = tickets;
+  }, [tickets, firebaseUser]);
 
   return (
     <div className="min-h-screen relative bg-slate-950 text-slate-200">
@@ -48,7 +79,12 @@ function App() {
       <PersonaSwitcher persona={persona} setPersona={setPersona} />
 
       {selectedTicket && (
-        <TicketDetail ticket={selectedTicket} onClose={() => setSelectedTicket(null)} />
+        <TicketDetail 
+          ticket={selectedTicket} 
+          onClose={() => setSelectedTicket(null)} 
+          persona={persona}
+          currentUser={firebaseUser}
+        />
       )}
 
       {/* Floating Simulate Time Button — Worker only */}
@@ -104,6 +140,16 @@ function App() {
             setTimeout(() => setShowReportModal(false), 3000)
           }}
         />
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-[2000] bg-emerald-600 text-white px-6 py-3 rounded-full shadow-2xl font-semibold text-sm flex items-center gap-2 animate-bounce">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          {toastMessage}
+        </div>
       )}
     </div>
   )

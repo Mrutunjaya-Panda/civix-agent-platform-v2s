@@ -1,7 +1,12 @@
 import { useState } from 'react';
+import { uploadImage } from '../lib/cloudinary';
 
-export default function TicketDetail({ ticket, onClose }) {
+export default function TicketDetail({ ticket, onClose, persona, currentUser }) {
   const [activeTab, setActiveTab] = useState('card'); // 'card' | 'email'
+  const [repairFile, setRepairFile] = useState(null);
+  const [processingRepair, setProcessingRepair] = useState(false);
+  const [repairError, setRepairError] = useState('');
+  const [processingConfirm, setProcessingConfirm] = useState(false);
 
   if (!ticket) return null;
 
@@ -127,6 +132,113 @@ export default function TicketDetail({ ticket, onClose }) {
           </div>
         )}
 
+      </div>
+
+      {/* Closed-Loop Resolution Controls (Footer) */}
+      <div className="p-4 border-t border-slate-800 bg-slate-900 shrink-0">
+        
+        {/* WORKER FLOW: Mark as Repaired */}
+        {persona === 'worker' && ticket.status !== 'resolved' && ticket.status !== 'closed' && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-semibold text-slate-200">Submit Repair Proof</h3>
+            <div className="flex gap-2 items-center">
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={(e) => {
+                  setRepairFile(e.target.files[0]);
+                  setRepairError('');
+                }}
+                className="text-xs file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-500/20 file:text-indigo-400 hover:file:bg-indigo-500/30 text-slate-300 w-full"
+              />
+            </div>
+            {repairError && (
+              <div className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 p-2 rounded">
+                {repairError}
+              </div>
+            )}
+            <button
+              disabled={!repairFile || processingRepair}
+              onClick={async () => {
+                setProcessingRepair(true);
+                setRepairError('');
+                try {
+                  const url = await uploadImage(repairFile);
+                  const res = await fetch('/api/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ticketId: ticket.id, repairImageUrl: url })
+                  });
+                  const data = await res.json();
+                  if (!data.success) {
+                    throw new Error(data.error || 'Verification failed');
+                  }
+                  if (!data.isRepaired) {
+                    setRepairError('Agent 3 rejected the proof. ' + data.recap);
+                  } else {
+                    setRepairFile(null); // success
+                  }
+                } catch (err) {
+                  setRepairError(err.message);
+                } finally {
+                  setProcessingRepair(false);
+                }
+              }}
+              className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded font-semibold text-sm transition-colors flex justify-center items-center gap-2"
+            >
+              {processingRepair ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                  Agent 3 Verifying...
+                </>
+              ) : 'Submit for Verification'}
+            </button>
+          </div>
+        )}
+
+        {/* CITIZEN FLOW: Confirm Resolution */}
+        {ticket.status === 'resolved' && (
+          <div className="space-y-4">
+            <div className="bg-emerald-500/10 border border-emerald-500/30 rounded p-3">
+              <h3 className="text-xs font-semibold text-emerald-400 uppercase mb-2">Repair Recap (Agent 3)</h3>
+              {ticket.repairImageUrl && (
+                <img src={ticket.repairImageUrl} alt="Repair" className="w-full h-32 object-cover rounded mb-2 border border-emerald-500/30" />
+              )}
+              <p className="text-xs text-slate-300">{ticket.agentRecap}</p>
+            </div>
+            
+            {persona === 'citizen' && currentUser?.uid === ticket.reportedBy && (
+              <button
+                disabled={processingConfirm}
+                onClick={async () => {
+                  setProcessingConfirm(true);
+                  try {
+                    await fetch('/api/confirm', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ ticketId: ticket.id })
+                    });
+                    onClose(); // Close on success
+                  } catch (err) {
+                    console.error(err);
+                  } finally {
+                    setProcessingConfirm(false);
+                  }
+                }}
+                className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded font-semibold text-sm transition-colors flex justify-center"
+              >
+                {processingConfirm ? 'Closing...' : 'Confirm Resolution'}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* CLOSED STATE */}
+        {ticket.status === 'closed' && (
+          <div className="text-center p-2 bg-slate-800 rounded border border-slate-700">
+            <span className="text-sm font-semibold text-slate-400">This issue has been closed.</span>
+          </div>
+        )}
       </div>
     </div>
   );

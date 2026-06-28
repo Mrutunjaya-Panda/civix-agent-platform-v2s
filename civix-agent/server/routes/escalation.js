@@ -9,7 +9,8 @@ const { draftGrievanceBrief } = require('../agents/routing');
  */
 router.post('/simulate-time', async (req, res) => {
   try {
-    const snapshot = await db.collection('tickets').where('status', '!=', 'resolved').get();
+    // We query for anything not 'closed' so we can escalate open/stalled and timeout resolved ones.
+    const snapshot = await db.collection('tickets').where('status', '!=', 'closed').get();
     
     if (snapshot.empty) {
       return res.json({ status: 'ok', message: 'No open tickets to simulate time for.' });
@@ -34,16 +35,35 @@ router.post('/simulate-time', async (req, res) => {
       let needsEscalation = false;
       let newStatus = ticket.status;
 
-      if (ticket.status !== 'escalated' && ticket.status !== 'stalled') {
-        if (ticket.severity >= 7 && newAge >= 24) {
-          needsEscalation = true;
-          newStatus = 'escalated';
-        } else if (ticket.severity >= 4 && ticket.severity < 7 && newAge >= 48) {
-          needsEscalation = true;
-          newStatus = 'escalated';
-        } else if (ticket.severity < 4 && newAge >= 72) {
-          needsEscalation = true;
-          newStatus = 'stalled';
+      // Check if it's a resolved ticket timing out
+      if (ticket.status === 'resolved') {
+        const resolvedAge = ticket.resolvedAtAge || currentAge; // fallback if missing
+        if (newAge - resolvedAge >= 72) {
+          updates.status = 'closed';
+          
+          const feedRef = db.collection('activityFeed').doc();
+          batch.set(feedRef, {
+            type: 'CLOSED',
+            message: `Citizen confirmation timeout (72h) → auto-closed`,
+            ticketId: doc.id,
+            createdAt: timestamp
+          });
+          
+          escalatedTickets.push({ id: doc.id, newStatus: 'closed', newAge });
+        }
+      } else {
+        // Normal SLA logic for non-resolved tickets
+        if (ticket.status !== 'escalated' && ticket.status !== 'stalled') {
+          if (ticket.severity >= 7 && newAge >= 24) {
+            needsEscalation = true;
+            newStatus = 'escalated';
+          } else if (ticket.severity >= 4 && ticket.severity < 7 && newAge >= 48) {
+            needsEscalation = true;
+            newStatus = 'escalated';
+          } else if (ticket.severity < 4 && newAge >= 72) {
+            needsEscalation = true;
+            newStatus = 'stalled';
+          }
         }
       }
 
