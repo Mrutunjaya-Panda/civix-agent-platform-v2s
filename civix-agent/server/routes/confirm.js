@@ -7,8 +7,8 @@ router.post('/confirm', async (req, res) => {
   try {
     const { ticketId } = req.body;
 
-    if (!ticketId) {
-      return res.status(400).json({ error: 'Missing ticketId' });
+    if (!ticketId || typeof ticketId !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid ticketId' });
     }
 
     const ticketRef = db.collection('tickets').doc(ticketId);
@@ -32,7 +32,7 @@ router.post('/confirm', async (req, res) => {
       ticketId,
       type: 'CLOSED',
       message: 'Ticket closed. Loop complete.',
-      timestamp: new Date().toISOString()
+      createdAt: new Date().toISOString()
     });
 
     await batch.commit();

@@ -38,7 +38,7 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 1,
-    imageUrl: 'https://images.unsplash.com/photo-1519999482648-25049ddd37b1?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://loremflickr.com/800/600/streetlight,broken,night/all',
     reasoning: 'Non-critical lighting issue in a public space. Low impact on immediate safety.',
     brief: {
       card: { title: 'STALLED: Minor Lighting Issue', summary: 'Blinking streetlight. No safety risk.', priority_actions: ['Schedule maintenance'] },
@@ -59,7 +59,7 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 3, // Shows cluster reinforcement
-    imageUrl: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://loremflickr.com/800/600/sinkhole,road,damage/all',
     reasoning: 'Critical infrastructure failure blocking traffic. High risk of injury.',
     brief: {
       card: { title: 'URGENT: Major Road Collapse', summary: 'Sinkhole blocking main transit artery.', priority_actions: ['Dispatch emergency barricades', 'Reroute traffic', 'Assess structural damage'] },
@@ -81,7 +81,7 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 1,
-    imageUrl: 'https://images.unsplash.com/photo-1582234372722-50d7ccc30ebd?q=80&w=800&auto=format&fit=crop',
+    imageUrl: 'https://loremflickr.com/800/600/flood,street,leak/all',
     repairImageUrl: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=800&auto=format&fit=crop', // Stock fixed pipe
     agentRecap: 'The uploaded image confirms the pipe has been sealed and the flooding is contained. Resolution verified.',
     reasoning: 'Active water leak wasting resources and causing localized flooding. Moderate severity.',
@@ -96,7 +96,7 @@ const seedData = [
 const categories = ['Roads', 'Water', 'Electricity', 'Sanitation'];
 const severities = [2, 3, 4, 5, 6, 7];
 
-for (let i = 4; i <= 20; i++) {
+for (let i = 4; i <= 6; i++) {
   const cat = categories[Math.floor(Math.random() * categories.length)];
   const sev = severities[Math.floor(Math.random() * severities.length)];
   
@@ -112,7 +112,7 @@ for (let i = 4; i <= 20; i++) {
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 1,
-    imageUrl: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=800&auto=format&fit=crop', // generic bus stop/street
+    imageUrl: `https://loremflickr.com/800/600/street,infrastructure,city/all?lock=${i}`, // unique image per normal ticket
     reasoning: `Triage AI determined this is a severity ${sev} ${cat} issue.`,
     brief: {
       card: { title: `Standard ${cat} Issue`, summary: 'Routine maintenance required.', priority_actions: ['Inspect', 'Repair'] },
@@ -157,8 +157,8 @@ async function runSeed() {
     // 4. Create an initial activity feed entry so it's not empty
     await db.collection('activityFeed').add({
       type: 'SYSTEM',
-      message: 'System rebooted. Initializing Agent Swarm. Monitoring 20 active municipal reports across Bhubaneswar.',
-      timestamp: new Date().toISOString()
+      message: 'System rebooted. Initializing Agent Swarm. Monitoring active municipal reports across Bhubaneswar.',
+      createdAt: new Date().toISOString()
     });
 
     console.log('✅ Seed complete!');

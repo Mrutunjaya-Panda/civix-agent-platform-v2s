@@ -9,18 +9,18 @@ service cloud.firestore {
     match /tickets/{ticketId} {
       // Anyone can read tickets (for the public community map)
       allow read: if true;
-      // Only authenticated users (citizens or municipal workers) can create/update tickets
-      allow write: if isAuthenticated();
+      // Only the backend server can create/update tickets
+      allow write: if false;
     }
 
     match /clusters/{clusterId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if false;
     }
 
     match /activityFeed/{feedId} {
       allow read: if true;
-      allow write: if isAuthenticated();
+      allow write: if false;
     }
     
     match /users/{userId} {

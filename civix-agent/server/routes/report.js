@@ -24,6 +24,9 @@ router.post('/report', async (req, res) => {
   if (!location || typeof location.lat !== 'number' || typeof location.lng !== 'number') {
     return res.status(400).json({ error: 'location with numeric lat and lng is required' });
   }
+  if (location.lat < -90 || location.lat > 90 || location.lng < -180 || location.lng > 180) {
+    return res.status(400).json({ error: 'location coordinates out of valid range' });
+  }
 
   console.log('[/api/report] Incoming report:', {
     imageUrl: imageUrl.slice(0, 60) + '…',

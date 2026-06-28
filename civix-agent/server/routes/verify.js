@@ -6,10 +6,20 @@ const router = express.Router();
 
 router.post('/verify', async (req, res) => {
   try {
+    const expectedPassphrase = process.env.VITE_MUNICIPAL_WORKER_PASSPHRASE || 'civix2026';
+    const providedPassphrase = req.headers['x-worker-passphrase'];
+
+    if (!providedPassphrase || providedPassphrase !== expectedPassphrase) {
+      return res.status(403).json({ error: 'Forbidden: Invalid or missing worker passphrase' });
+    }
+
     const { ticketId, repairImageUrl } = req.body;
 
-    if (!ticketId || !repairImageUrl) {
-      return res.status(400).json({ error: 'Missing ticketId or repairImageUrl' });
+    if (!ticketId || typeof ticketId !== 'string') {
+      return res.status(400).json({ error: 'Missing or invalid ticketId' });
+    }
+    if (!repairImageUrl || typeof repairImageUrl !== 'string' || !repairImageUrl.startsWith('http')) {
+      return res.status(400).json({ error: 'Missing or invalid repairImageUrl' });
     }
 
     const ticketRef = db.collection('tickets').doc(ticketId);
@@ -42,7 +52,7 @@ router.post('/verify', async (req, res) => {
         ticketId,
         type: 'RESOLUTION',
         message: 'Email drafted and dispatched to citizen — awaiting confirmation',
-        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
         details: recap
       });
     } else {
@@ -52,7 +62,7 @@ router.post('/verify', async (req, res) => {
         ticketId,
         type: 'REJECTED',
         message: 'Repair verification failed. Image does not show a valid fix.',
-        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
         details: recap
       });
     }

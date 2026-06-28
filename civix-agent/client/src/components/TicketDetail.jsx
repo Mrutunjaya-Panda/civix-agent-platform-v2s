@@ -11,9 +11,9 @@ export default function TicketDetail({ ticket, onClose, persona, currentUser }) 
   if (!ticket) return null;
 
   return (
-    <div className="absolute top-4 left-4 bottom-4 w-96 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-[1000] flex flex-col overflow-hidden">
+    <div className="absolute top-4 left-4 bottom-4 w-96 bg-slate-900/60 backdrop-blur-xl border border-indigo-500/20 rounded-2xl shadow-2xl z-[1000] flex flex-col overflow-hidden animate-in slide-in-from-left-4 fade-in duration-300">
       {/* Header */}
-      <div className={`flex justify-between items-center p-4 border-b ${ticket.status === 'escalated' ? 'bg-red-900/30 border-red-500/30' : 'bg-slate-800/50 border-slate-800'}`}>
+      <div className={`flex justify-between items-center p-5 border-b ${ticket.status === 'escalated' ? 'bg-rose-900/40 border-rose-500/30' : 'bg-slate-900/40 border-white/5'}`}>
         <div>
           <span className="text-xs font-mono text-slate-400">TICKET ID</span>
           <h2 className="text-lg font-semibold text-slate-100 truncate w-64" title={ticket.id}>
@@ -42,17 +42,17 @@ export default function TicketDetail({ ticket, onClose, persona, currentUser }) 
           <span className="px-2.5 py-1 text-xs font-semibold bg-indigo-500/20 text-indigo-300 rounded-full border border-indigo-500/30">
             {ticket.category || 'Uncategorized'}
           </span>
-          <span className={`px-2.5 py-1 text-xs font-semibold rounded-full border ${
+          <span className={`px-3 py-1.5 text-xs font-semibold rounded-full border ${
             ticket.status === 'resolved' ? 'bg-slate-500/20 text-slate-300 border-slate-500/30' :
-            ticket.status === 'escalated' ? 'bg-red-500/20 text-red-400 border-red-500/30 animate-pulse' :
+            ticket.status === 'escalated' ? 'bg-rose-500/20 text-rose-400 border-rose-500/30 animate-pulse' :
             ticket.status === 'stalled' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
             'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
           }`}>
             {(ticket.status || 'NEW').toUpperCase()}
           </span>
           {ticket.severity && (
-            <span className={`px-2.5 py-1 text-xs font-bold rounded-full border ${
-              ticket.severity >= 7 ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+            <span className={`px-3 py-1.5 text-xs font-bold rounded-full border ${
+              ticket.severity >= 7 ? 'bg-rose-500/20 text-rose-400 border-rose-500/30' :
               ticket.severity >= 4 ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
               'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
             }`}>
@@ -60,7 +60,7 @@ export default function TicketDetail({ ticket, onClose, persona, currentUser }) 
             </span>
           )}
           {ticket.duplicateCount > 1 && (
-            <span className="px-2.5 py-1 text-xs font-bold rounded-full border bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30 flex items-center gap-1" title="Cluster Reinforcement (Multiple Reports Merged)">
+            <span className="px-3 py-1.5 text-xs font-bold rounded-full border bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30 flex items-center gap-1" title="Cluster Reinforcement (Multiple Reports Merged)">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
               </svg>
@@ -143,7 +143,7 @@ export default function TicketDetail({ ticket, onClose, persona, currentUser }) 
       </div>
 
       {/* Closed-Loop Resolution Controls (Footer) */}
-      <div className="p-4 border-t border-slate-800 bg-slate-900 shrink-0">
+      <div className="p-5 border-t border-white/5 bg-slate-900/40 shrink-0">
         
         {/* WORKER FLOW: Mark as Repaired */}
         {persona === 'worker' && ticket.status !== 'resolved' && ticket.status !== 'closed' && (
@@ -174,7 +174,10 @@ export default function TicketDetail({ ticket, onClose, persona, currentUser }) 
                   const url = await uploadImage(repairFile);
                   const res = await fetch('/api/verify', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                      'Content-Type': 'application/json',
+                      'x-worker-passphrase': import.meta.env.VITE_MUNICIPAL_WORKER_PASSPHRASE || 'civix2026'
+                    },
                     body: JSON.stringify({ ticketId: ticket.id, repairImageUrl: url })
                   });
                   const data = await res.json();

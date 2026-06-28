@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-display: 'Space Grotesk', sans-serif;
+}
+
 /* ── CivixAgent Global Styles ──────────────────────────────────────────────── */
 
 :root {

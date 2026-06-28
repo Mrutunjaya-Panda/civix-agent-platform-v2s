@@ -30,23 +30,23 @@ export default function PersonaSwitcher({ persona, setPersona }) {
 
   return (
     <div className="absolute top-4 right-4 z-[1000] flex flex-col items-end gap-2">
-      <div className="flex bg-slate-800 rounded-lg p-1 border border-indigo-500/30 shadow-lg">
+      <div className="flex gap-1 bg-slate-900/60 backdrop-blur-xl border border-indigo-500/20 shadow-2xl rounded-2xl p-1.5">
         <button
           onClick={() => handleSwitch('citizen')}
-          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
+          className={`px-5 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
             persona === 'citizen'
-              ? 'bg-indigo-500 text-white shadow'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-indigo-500/20 text-indigo-300 shadow-sm border border-indigo-500/30'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent'
           }`}
         >
           Citizen
         </button>
         <button
           onClick={() => handleSwitch('worker')}
-          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors flex items-center gap-2 ${
+          className={`px-5 py-2 text-sm font-medium rounded-xl transition-all duration-300 flex items-center gap-2 ${
             persona === 'worker'
-              ? 'bg-amber-500 text-slate-900 shadow'
-              : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-amber-500/20 text-amber-300 shadow-sm border border-amber-500/30'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent'
           }`}
         >
           Worker

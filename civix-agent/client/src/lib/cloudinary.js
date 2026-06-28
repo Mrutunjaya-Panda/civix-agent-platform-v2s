@@ -9,6 +9,15 @@ import imageCompression from 'browser-image-compression';
 export async function uploadImage(file) {
   if (!file) throw new Error('No file provided for upload.');
 
+  if (!file.type.startsWith('image/')) {
+    throw new Error('Invalid file type. Only images are allowed.');
+  }
+
+  // 10MB limit (10 * 1024 * 1024 bytes)
+  if (file.size > 10485760) {
+    throw new Error('File is too large. Maximum size is 10MB.');
+  }
+
   // 1. Compress the image client-side to save bandwidth and Cloudinary storage
   const options = {
     maxSizeMB: 1, // Max file size in MB

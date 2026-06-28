@@ -4,7 +4,7 @@
  * Centered on Master Canteen Square, Bhubaneswar (20.2961°N, 85.8245°E)
  */
 import { useEffect, useRef } from 'react'
-import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, useMap, ZoomControl } from 'react-leaflet'
 import L from 'leaflet'
 
 // ── Fix Leaflet default icon broken images in Vite ─────────────────────────
@@ -55,30 +55,34 @@ function MarkerClusterLayer({ tickets, onMarkerClick }) {
     tickets.forEach((ticket) => {
       if (!ticket.location || !ticket.location.lat || !ticket.location.lng) return;
 
-      // Determine pin color based on severity and status
-      let bgColor = '#22c55e'; // Green (Low)
-      let borderColor = '#14532d';
+      let bgColor = '#10b981'; // emerald-500 (Low)
+      let borderColor = '#059669'; // emerald-600
+      let shadowColor = 'rgba(16, 185, 129, 0.4)';
       
       if (ticket.status === 'resolved') {
-        bgColor = '#64748b'; // Grey
-        borderColor = '#334155';
+        bgColor = '#94a3b8'; // slate-400
+        borderColor = '#64748b'; // slate-500
+        shadowColor = 'transparent';
       } else if (ticket.severity >= 7) {
-        bgColor = '#ef4444'; // Red (High)
-        borderColor = '#7f1d1d';
+        bgColor = '#f43f5e'; // rose-500 (High)
+        borderColor = '#e11d48'; // rose-600
+        shadowColor = 'rgba(244, 63, 94, 0.6)';
       } else if (ticket.severity >= 4) {
-        bgColor = '#eab308'; // Yellow (Medium)
-        borderColor = '#713f12';
+        bgColor = '#f59e0b'; // amber-500 (Medium)
+        borderColor = '#d97706'; // amber-600
+        shadowColor = 'rgba(245, 158, 11, 0.5)';
       }
 
       const html = `
         <div style="
           background-color: ${bgColor};
           border: 2px solid ${borderColor};
-          width: 20px;
-          height: 20px;
+          width: 100%;
+          height: 100%;
           border-radius: 50%;
-          box-shadow: 0 0 10px ${bgColor}80;
-        "></div>
+          box-shadow: 0 0 15px ${shadowColor};
+          transition: all 0.3s ease;
+        " onmouseover="this.style.transform='scale(1.2)';" onmouseout="this.style.transform='scale(1)';"></div>
       `;
 
       const customIcon = L.divIcon({
@@ -109,14 +113,15 @@ function MarkerClusterLayer({ tickets, onMarkerClick }) {
 // ── Main Map component ────────────────────────────────────────────────────────
 export default function Map({ tickets = [], onMarkerClick }) {
   return (
-    <div style={{ height: 'calc(100vh - 64px)', width: '100%', position: 'relative' }}>
+    <div style={{ height: '100vh', width: '100%', position: 'relative' }}>
       <MapContainer
         center={BHUBANESWAR_CENTER}
         zoom={DEFAULT_ZOOM}
         style={{ height: '100%', width: '100%' }}
-        zoomControl={true}
+        zoomControl={false}
         attributionControl={true}
       >
+        <ZoomControl position="bottomright" />
         {/* CartoDB Dark Matter tiles — no API key, free for hackathons */}
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
@@ -130,15 +135,13 @@ export default function Map({ tickets = [], onMarkerClick }) {
       </MapContainer>
 
       {/* Map overlay — city label */}
-      <div style={{
-        position: 'absolute', bottom: 32, left: 16, zIndex: 1000,
-        background: 'rgba(15,23,42,0.85)',
-        border: '1px solid rgba(99,102,241,0.3)',
-        borderRadius: 8, padding: '6px 12px',
-        backdropFilter: 'blur(8px)',
-      }}>
-        <span style={{ color: '#94a3b8', fontSize: 12, fontFamily: 'monospace' }}>
-          📍 Bhubaneswar, Odisha
+      <div className="absolute top-24 left-6 z-[1000] bg-slate-900/60 backdrop-blur-xl border border-indigo-500/20 rounded-xl px-4 py-2 shadow-xl pointer-events-none">
+        <span className="text-slate-400 text-xs font-mono tracking-wider flex items-center gap-1.5">
+          <svg className="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          BHUBANESWAR, ODISHA
         </span>
       </div>
     </div>

@@ -9,6 +9,13 @@ const { draftGrievanceBrief } = require('../agents/routing');
  */
 router.post('/simulate-time', async (req, res) => {
   try {
+    const expectedPassphrase = process.env.VITE_MUNICIPAL_WORKER_PASSPHRASE || 'civix2026';
+    const providedPassphrase = req.headers['x-worker-passphrase'];
+
+    if (!providedPassphrase || providedPassphrase !== expectedPassphrase) {
+      return res.status(403).json({ error: 'Forbidden: Invalid or missing worker passphrase' });
+    }
+
     // We query for anything not 'closed' so we can escalate open/stalled and timeout resolved ones.
     const snapshot = await db.collection('tickets').where('status', '!=', 'closed').get();
     

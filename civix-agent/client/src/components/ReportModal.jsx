@@ -87,14 +87,14 @@ export default function ReportModal({ onClose, onSuccess }) {
       style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="w-full sm:max-w-lg bg-slate-900 border border-slate-700 rounded-t-2xl sm:rounded-2xl shadow-2xl overflow-hidden">
+      <div className="w-full sm:max-w-lg bg-slate-900/60 backdrop-blur-2xl border border-indigo-500/20 rounded-t-3xl sm:rounded-3xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden animate-in slide-in-from-bottom-8 fade-in duration-300">
         {/* Header */}
-        <div className="flex justify-between items-center px-6 py-4 border-b border-slate-800 bg-slate-800/50">
+        <div className="flex justify-between items-center px-6 py-5 border-b border-white/5 bg-slate-900/40">
           <div>
-            <h2 className="text-lg font-semibold text-slate-100">Report a Civic Issue</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Bhubaneswar, Odisha</p>
+            <h2 className="text-xl font-display font-semibold text-slate-100">Report a Civic Issue</h2>
+            <p className="text-xs text-slate-400 mt-0.5 font-mono">Bhubaneswar, Odisha</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded-full hover:bg-slate-700 transition-colors">
+          <button onClick={onClose} className="text-slate-500 hover:text-white p-2 rounded-full hover:bg-slate-800 transition-colors -mr-2">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -105,7 +105,7 @@ export default function ReportModal({ onClose, onSuccess }) {
           {/* Photo upload */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              📷 Photo <span className="text-red-400">*</span>
+              Photo Evidence <span className="text-rose-400">*</span>
             </label>
             {imagePreview ? (
               <div className="relative rounded-xl overflow-hidden border border-slate-700 bg-slate-800">
@@ -138,7 +138,7 @@ export default function ReportModal({ onClose, onSuccess }) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full h-36 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:border-indigo-500 hover:text-indigo-400 transition-colors cursor-pointer"
+                className="w-full h-40 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center gap-3 text-slate-400 hover:border-indigo-500 hover:text-indigo-400 hover:bg-indigo-500/5 transition-all cursor-pointer"
               >
                 <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -161,7 +161,7 @@ export default function ReportModal({ onClose, onSuccess }) {
           {/* Location */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              📍 Location <span className="text-red-400">*</span>
+              Location <span className="text-rose-400">*</span>
             </label>
             {location ? (
               <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
@@ -188,7 +188,15 @@ export default function ReportModal({ onClose, onSuccess }) {
                     </svg>
                     Getting location…
                   </>
-                ) : '📍 Use My Current Location'}
+                ) : (
+                  <span className="flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Use My Current Location
+                  </span>
+                )}
               </button>
             )}
             {locationError && <p className="text-xs text-amber-400 mt-1">{locationError}</p>}
@@ -197,7 +205,7 @@ export default function ReportModal({ onClose, onSuccess }) {
           {/* Optional note */}
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-2">
-              📝 Description <span className="text-slate-500 font-normal">(optional)</span>
+              Description <span className="text-slate-500 font-normal ml-1 text-xs">(optional)</span>
             </label>
             <textarea
               value={note}
