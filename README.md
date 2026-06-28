@@ -1,10 +1,36 @@
 # CivixAgent 🏛️🤖
+
+[![Hackathon: Vibe2Ship](https://img.shields.io/badge/Hackathon-Vibe2Ship-blueviolet?style=flat-square)](https://github.com/Mrutunjaya-Panda/civix-agent-platform-v2s)
+[![React](https://img.shields.io/badge/React-18.x-61dafb?logo=react&style=flat-square)](#)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646cff?logo=vite&style=flat-square)](#)
+[![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?logo=node.js&style=flat-square)](#)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore-ffca28?logo=firebase&style=flat-square)](#)
+[![Gemini API](https://img.shields.io/badge/Gemini%20API-2.5%20Flash-blue?logo=google&style=flat-square)](#)
+[![Leaflet](https://img.shields.io/badge/Leaflet-1.9-199900?logo=leaflet&style=flat-square)](#)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+
 > **Autonomous Tri-Agent Infrastructure for Bhubaneswar, India**
 > An intelligent, autonomous civic issue routing and verification platform built to bridge the gap between citizens and municipal departments.
 
+> [!TIP]
+> **Try it now:** Visit the live demo, click **"Report Issue Here"** to upload an issue, then toggle to **"Worker"** mode in the top-right (passphrase: `civix2026`) to watch the AI agents triage, escalate, and verify repair claims autonomously!
+
 ---
 
-## 1. Project Overview
+## 📌 Table of Contents
+1. [🏛️ 1. Project Overview](#️-1-project-overview)
+2. [📱 2. How to Use the App](#-2-how-to-use-the-app)
+3. [🤖 3. Technical Architecture & Agent Swarm](#-3-technical-architecture--agent-swarm)
+4. [🔄 4. Ticket Lifecycle States](#-4-ticket-lifecycle-states)
+5. [🧮 5. Severity Formula Explained](#-5-severity-formula-explained)
+6. [🛠️ 6. Tech Stack](#️-6-tech-stack)
+7. [🧪 7. What is Simulated vs. Real](#-7-what-is-simulated-vs-real)
+8. [🚀 8. Future Enhancements](#-8-future-enhancements)
+9. [💻 9. Local Setup Instructions](#-9-local-setup-instructions)
+
+---
+
+## 🏛️ 1. Project Overview
 In rapidly growing municipalities like Bhubaneswar, civic complaints (e.g., open potholes, leaking pipes, blinking streetlights) are often delayed due to manual triaging errors, high volumes of duplicate reports, and delayed communication. 
 
 **CivixAgent** addresses this problem by deploying an autonomous **Tri-Agent System** that manages the entire lifecycle of a civic issue. It acts as an automated municipal routing office:
@@ -14,7 +40,7 @@ In rapidly growing municipalities like Bhubaneswar, civic complaints (e.g., open
 
 ---
 
-## 2. How to Use the App
+## 📱 2. How to Use the App
 Follow these step-by-step instructions to experience the full capabilities of CivixAgent. The application features a dual-persona interface (Citizen and Municipal Worker) that allows you to simulate the entire citizen-to-municipality loop in real-time.
 
 ### Step 1: Report an Issue as a Citizen
@@ -28,7 +54,9 @@ Follow these step-by-step instructions to experience the full capabilities of Ci
 ### Step 2: Switch to Municipal Worker Mode
 1. In the top-right corner of the screen, click the **Persona Switcher** toggle.
 2. Select **"Worker"**.
-3. You will be prompted for a passphrase. Enter **`civix2026`** and click **"Unlock"**.
+3. You will be prompted for a passphrase. 
+> [!TIP]
+> **Worker Passphrase:** Enter **`civix2026`** in the prompt and click **"Unlock"** to access the municipal workspace tools.
 4. The interface will switch to Worker Mode, revealing new administrative tools:
    - A floating **"Fast-Forward Time (+6h)"** button at the bottom of the screen.
    - An administrative control panel in the ticket detail sidebar for submitting repair proof.
@@ -53,12 +81,20 @@ Follow these step-by-step instructions to experience the full capabilities of Ci
 2. Open your resolved ticket.
 3. You will see the **"Confirm Resolution"** button along with the Agent 3 visual recap and repair photo.
 4. Click **"Confirm Resolution"** to permanently close the ticket and change its status to **`CLOSED`**.
-5. *(Note: If the citizen does not confirm resolution, the ticket will automatically transition to `CLOSED` after 72 hours of simulated time via the Fast-Forward button).*
+> [!NOTE]
+> **Auto-Close Inactivity Timeout:** If the citizen does not manually confirm a resolution, the ticket will automatically transition to `CLOSED` after **72 hours** of simulated time.
 
 ---
 
-## 3. Technical Architecture & Agent Swarm
+## 🤖 3. Technical Architecture & Agent Swarm
 CivixAgent operates using a three-agent system built on top of the modular Express backend and React frontend.
+
+> [!NOTE]
+> **Flowchart Color Code Key:** 
+> - **Green Nodes:** Citizen actions and user-facing entry points.
+> - **Purple Nodes:** Autonomous AI agent decisions and LLM generations.
+> - **Orange Nodes:** Municipal worker processes and actions.
+> - **Grey Nodes:** System calculations, routing tables, and automated decision branches.
 
 ```mermaid
 graph TD
@@ -169,32 +205,47 @@ graph TD
 
 ---
 
-## 4. Ticket Lifecycle States
-Tickets in CivixAgent progress through the following statuses:
+## 🔄 4. Ticket Lifecycle States
+CivixAgent enforces a strict, state-machine lifecycle for every ticket to prevent tasks from falling through the cracks:
 
-1. **`new`**: The ticket has been created and categorized. Agent 2 has drafted the initial grievance brief and email.
-2. **`escalated`**: High or Medium severity tickets that have remained unresolved past their respective SLA thresholds (24 hours and 48 hours, respectively). They are autonomously pushed to Tier-2 attention with urgent briefings.
-3. **`stalled`**: Low severity tickets (severity < 4) that have remained unresolved past 72 hours.
-4. **`resolved`**: A worker has submitted proof of repair, and Agent 3 has visually verified the fix. The ticket is currently awaiting citizen confirmation.
-5. **`closed`**: The issue is finalized. This happens either when a citizen confirms the resolution or automatically after 72 hours in the `resolved` state.
+| Status | Trigger / Criteria | What Happens Next |
+| :--- | :--- | :--- |
+| **`new`** | Initial citizen ticket submission. | Agent 1 triages and Agent 2 drafts the initial grievance brief and email. Ticket awaits municipal worker inspection. |
+| **`escalated`** | Ticket remains unresolved past its SLA threshold (Age $\ge$ 24h for High severity, $\ge$ 48h for Medium severity). | Status is updated automatically during time simulation; Agent 2 generates a highly urgent Tier-2 escalation brief and email. |
+| **`stalled`** | Low-severity ticket (Severity < 4) remains unresolved past 72h. | Status is updated automatically; ticket is flagged as stalled. |
+| **`resolved`** | Municipal worker uploads repair proof, and Agent 3 visually verifies the fix. | Ticket waits in a resolved queue for the citizen to confirm the fix. |
+| **`closed`** | Citizen clicks "Confirm Resolution", or the ticket reaches 72h in the `resolved` state without citizen action. | Ticket is permanently archived, and the issue resolution loop is complete. |
+
+### SLA Threshold Limits
+
+| Severity Band | Score Range | SLA Threshold | Action on Breach |
+| :--- | :--- | :--- | :--- |
+| **HIGH** | $\ge 7.0$ | **24 Hours** | Status becomes `escalated`; Agent 2 drafts urgent brief. |
+| **MEDIUM** | $4.0$ to $6.9$ | **48 Hours** | Status becomes `escalated`; Agent 2 drafts urgent brief. |
+| **LOW** | $< 4.0$ | **72 Hours** | Status becomes `stalled`; Agent 2 drafts brief. |
 
 ---
 
-## 5. Severity Formula Explained
+## 🧮 5. Severity Formula Explained
 To ensure objective prioritization, CivixAgent implements a standardized severity score formula:
 
 $$\text{Severity} = \text{clamp}\left( \left( (\text{Baseline} \times 0.5) + (\text{Visual} \times 0.5) \right) + \text{ClusterBonus}, \; 1, \; 10 \right)$$
 
-### Components
-- **Baseline:** A fixed severity offset assigned to each department category representing its default priority:
-  - **Electricity:** 8.0 (highest safety risk)
-  - **Water:** 7.0
-  - **Roads:** 6.0
-  - **Sanitation:** 5.0 (lowest safety risk)
-- **Visual:** The raw 1–10 visual severity score generated by Agent 1's analysis of the photo (where 1 is negligible cosmetic damage, and 10 is immediate hazard/threat to life).
+### Department Baseline Offsets
+
+| Department | Baseline Score | Primary Risk / Reasoning |
+| :--- | :--- | :--- |
+| **Electricity** | `8.0` | **Highest safety risk:** Live wires, dark streets, power surges pose immediate physical dangers. |
+| **Water** | `7.0` | **High resource risk:** Burst mains waste water, flood neighborhoods, and block traffic. |
+| **Roads** | `6.0` | **Medium traffic/physical risk:** Potholes and road damage disrupt mobility and cause vehicular damage. |
+| **Sanitation** | `5.0` | **Lowest immediate safety risk:** Waste accumulation and sewer blocks cause hygienic issues but lower immediate physical harm. |
+
+### Formula Variable Definitions
+- **Baseline:** The default severity offset of the category (see table above).
+- **Visual:** The raw 1–10 visual severity score generated by Agent 1's analysis of the photo (1 is negligible cosmetic damage, 10 is an immediate threat to life).
 - **ClusterBonus:** A density multiplier calculated during the deduplication step:
   - Begins at `0` for unique tickets.
-  - Adds `0.5` points for each subsequent report merged within the 50-meter radius, capped at a maximum bonus of `2.0` (which is reached at 4 duplicate reports).
+  - Adds `0.5` points for each subsequent report merged within the 50-meter radius, capped at a maximum bonus of `2.0` (reached at 4 duplicate reports).
 - **Clamp:** Restricts the final value strictly within the `[1.0, 10.0]` range.
 - **Rounding:** Rounded to one decimal place.
 
@@ -217,29 +268,33 @@ A citizen reports a broken road pothole.
 
 ---
 
-## 6. Tech Stack
+## 🛠️ 6. Tech Stack
 CivixAgent is engineered with a modern, lightweight, "no-card-required" technology stack:
 
-- **React + Vite (Frontend):** Selected for rapid build times, instant Hot Module Replacement (HMR) during developer iterations, and lightweight client deployment.
-- **Express.js (Backend):** Serves as the routing API layer connecting Firebase and Gemini services.
-- **Cloudinary (Image Storage):** Chosen for its generous free tier and unsigned client-side upload support, eliminating the need to process heavy image files through the server CPU.
-- **Firebase Firestore (NoSQL Database):** A real-time database that drives instant updates in the client map when tickets are added, modified, or escalated.
-- **Firebase Anonymous Authentication:** Allows citizens to immediately submit issues and securely track their own reported tickets without typing passwords, entering credit cards, or exposing email addresses.
-- **Gemini API via Google AI Studio (@google/genai SDK):** Utilizes `gemini-2.5-flash` for high-speed visual triage, brief drafting, and repair verification without requiring paid credit cards or billing setup.
-- **Leaflet & OpenStreetMap (Mapping Engine):** Fully open-source geographic mapping libraries that provide a smooth, draggable live pinboard map without incurring Google Maps API usage fees.
+| Technology | Role | Why Chosen (No-Card / Free Tier Friendly) |
+| :--- | :--- | :--- |
+| **React + Vite** | Frontend Framework | Fast build times, instant Hot Module Replacement (HMR) for rapid development, and a highly responsive single-page client. |
+| **Express.js** | Backend Server API | Provides a lightweight, scalable middleware layer to connect the client, Firestore, and the Gemini API. |
+| **Cloudinary** | Image Storage | Generous free tier and unsigned client-side upload support, avoiding heavy image uploads through the server CPU. |
+| **Firebase Firestore** | NoSQL Real-time Database | Subsecond syncing to the frontend client map whenever issues are updated, escalated, or resolved. |
+| **Firebase Anonymous Auth** | Authentication | Allows immediate ticket reporting and tracking for citizens without requiring logins, passwords, or exposing emails. |
+| **Gemini API (`gemini-2.5-flash`)** | AI Swarm Core | Speed and multimodal capability for visual triage, routing briefs, and visual verification. Google AI Studio provides a free key tier without requiring a billing credit card. |
+| **Leaflet & OpenStreetMap** | Map Engine | Open-source geographic rendering and dragging pin boards. Zero billing or API key constraints, unlike Google Maps. |
 
 ---
 
-## 7. What is Simulated vs. Real
+## 🧪 7. What is Simulated vs. Real
 To ensure transparency, here is a breakdown of what is simulated for demonstration purposes:
 
-- **SLA Timing (Simulated):** In a production system, ticket ages accumulate in real-time. For a hackathon demo, you cannot wait 24 to 72 actual hours to observe escalation, stalling, or automatic closing behaviors. Therefore, a simulated clock is implemented. In Worker Mode, clicking the **"Fast-Forward Time (+6h)"** button increments the ticket age in the database by 6 hours instantly, forcing the background SLA cron checks to run immediately.
-- **Department Dispatches (Simulated):** The emails drafted by Agent 2 and the notifications from Agent 3 are printed to the database and displayed inside the administrative brief tab rather than being dispatched to real government mail servers or SMS gateways.
-- **Municipal APIs (Simulated):** The routing tables are seeded and mapped locally to demonstrate how CivixAgent can integrate with actual city planning API endpoints.
+> [!IMPORTANT]
+> **Transparency: Simulation Details**
+> - **SLA Timing:** A simulated clock is used since hackathon judges cannot wait real days to see escalations. Clicking the **"Fast-Forward Time (+6h)"** button adds 6 simulated hours to all active tickets in the database.
+> - **Department Dispatches:** Grievance briefs and email contents are written directly to Firestore and rendered in the admin panel rather than sent to real mail servers.
+> - **Municipal APIs:** The routing tables and contacts use seeded data representing Bhubaneswar municipal bodies.
 
 ---
 
-## 8. Future Enhancements
+## 🚀 8. Future Enhancements
 If developed beyond a hackathon proof-of-concept, the CivixAgent roadmap includes:
 
 1. **Semantic Deduplication:** Transitioning from simple spatial radius checks to visual and text embedding comparison (using Gemini's embedding models) to group issues that are visually identical but slightly offset on GPS coordinates.
@@ -250,7 +305,7 @@ If developed beyond a hackathon proof-of-concept, the CivixAgent roadmap include
 
 ---
 
-## 9. Local Setup Instructions
+## 💻 9. Local Setup Instructions
 
 ### Prerequisites
 - Node.js (v18 or higher)
