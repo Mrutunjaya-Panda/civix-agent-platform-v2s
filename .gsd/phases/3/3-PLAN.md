@@ -62,7 +62,8 @@ Complete the Triage Agent by adding the spatial duplicate check and Cluster Rein
        - Re-run severity formula with clusterBonus applied, yielding `newSeverity`.
        - Get `band = severityBand(newSeverity)` — import from `dedup.js`, same function used by the frontend.
        - Update the NEAREST existing ticket's `severity` and `duplicateCount` in Firestore.
-       - Write a document to the `clusters` Firestore collection: `{ parentTicketId, duplicateReportPayload: { imageUrl, location, note }, clusterBonus, createdAt }`.
+       - Write a document to the `clusters` Firestore collection: `{ parentTicketId, imageUrl, clusterBonus, createdAt }`.
+         Note: store only `imageUrl` (not full location/note). Location is redundant (within 50m of parent by definition). Note varies most and adds the most bytes for the least downstream value. `imageUrl` is worth keeping — Phase 5 can render a "N citizens photographed this" gallery. Each cluster doc is ~200 bytes; 10 duplicates = ~2KB total, well within Firestore limits.
        - Write to `activityFeed`: `` `${nearbyTickets.length} similar report(s) within 50m detected → merged → priority bumped to ${newSeverity.toFixed(1)} (${band})` `` — both the number and band come from the SAME computed value.
        - Return `{ status: 'clustered', parentTicketId, newSeverity }` — do NOT create a new ticket.
     3. **If no nearby tickets (unique report)**:
