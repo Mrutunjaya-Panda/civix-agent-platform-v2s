@@ -1,4 +1,4 @@
-﻿# DECISIONS.md — Architecture Decision Records
+# DECISIONS.md — Architecture Decision Records
 
 > CivixAgent — Decision log
 
@@ -65,3 +65,9 @@
 - Add CLOUDINARY_CLOUD_NAME to .env (client-safe, no secret needed for unsigned uploads)
 - Client upload flow: compress image client-side → POST to https://api.cloudinary.com/v1_1/{cloud_name}/image/upload → get back secure_url
 - Server gemini.js: receives the Cloudinary URL, passes as fileData.fileUri to Gemini Vision (public URL works directly)
+
+## ADR-012: Spatial-Only Deduplication (Semantic Dedup Deferred)
+**Date**: 2026-06-28
+**Decision**: Phase 3 dedup uses spatial radius (50m) + category match only. Gemini embedding comparison of descriptions is intentionally deferred post-hackathon.
+**Reason**: Semantic dedup requires a second LLM round-trip per incoming report (fetch embeddings, cosine similarity), adding ~3-5s latency and Gemini quota cost. The visible demo benefit of a cluster merge moment is already delivered by spatial + category matching alone. Embedding comparison would reduce false-merge rate but makes dedup less visually legible to judges. This is a deliberate v1 scope decision, not an oversight.
+**Impact**: `dedup.js` uses Haversine distance only. The `clusters` collection records the join for Phase 4/5 traceability. `severityBand(n)` utility is the single source of truth for HIGH/MEDIUM/LOW labels — prevents the UI and activity feed from ever drifting out of sync.

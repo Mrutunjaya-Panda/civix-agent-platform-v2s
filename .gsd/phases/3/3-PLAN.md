@@ -9,6 +9,8 @@ wave: 3
 ## Objective
 Complete the Triage Agent by adding the spatial duplicate check and Cluster Reinforcement logic — if a new report lands within 50m of an existing open ticket in the same category, it reinforces the cluster instead of creating a new pin, bumping severity with the ClusterBonus.
 
+**ADR-012 (recorded):** Semantic dedup (comparing descriptions via Gemini embeddings) is intentionally deferred. Spatial + category match is the correct pragmatic choice for demo scale — it produces a clear, visible cluster merge moment without a second LLM round-trip. This is a deliberate decision, not an oversight.
+
 ## Context
 - .gsd/SPEC.md — Agent 1 spec, ClusterBonus formula, Success Criteria (90% dedup accuracy)
 - civix-agent/server/agents/triage.js
@@ -25,9 +27,12 @@ Complete the Triage Agent by adding the spatial duplicate check and Cluster Rein
   <action>
     Create `server/agents/dedup.js` exporting `findNearbyTickets({ lat, lng, category, radiusMeters = 50 })`:
 
-    1. Query Firestore `tickets` collection for open tickets of the same category.
+    1. Query Firestore `tickets` collection for open (non-resolved) tickets of the same category.
     2. For each result, compute Haversine distance from `{lat, lng}` to `ticket.location`.
-    3. Return the array of tickets within `radiusMeters` sorted by distance.
+    3. Return the array of tickets within `radiusMeters` sorted by distance ascending.
+
+    Also export a `severityBand(n)` utility: `n >= 7 ? 'HIGH' : n >= 4 ? 'MEDIUM' : 'LOW'`.
+    This is the SINGLE source of truth for band labels — imported by both the route and the frontend UI.
 
     Note: Firestore does NOT support native geo-radius queries — we must fetch tickets by category and filter in-memory using Haversine. This is acceptable for demo scale (city-level, <1000 tickets).
 
@@ -54,9 +59,11 @@ Complete the Triage Agent by adding the spatial duplicate check and Cluster Rein
     1. Call `findNearbyTickets({ lat, lng, category })` AFTER triage classification.
     2. **If nearby tickets found (cluster hit)**:
        - Calculate `clusterBonus = min(nearbyTickets.length * 0.5, 2)`.
-       - Re-run severity formula with clusterBonus applied.
+       - Re-run severity formula with clusterBonus applied, yielding `newSeverity`.
+       - Get `band = severityBand(newSeverity)` — import from `dedup.js`, same function used by the frontend.
        - Update the NEAREST existing ticket's `severity` and `duplicateCount` in Firestore.
-       - Write to `activityFeed`: `"${nearbyTickets.length} similar report(s) within 50m detected → merged → severity bumped to ${newSeverity}"`.
+       - Write a document to the `clusters` Firestore collection: `{ parentTicketId, duplicateReportPayload: { imageUrl, location, note }, clusterBonus, createdAt }`.
+       - Write to `activityFeed`: `` `${nearbyTickets.length} similar report(s) within 50m detected → merged → priority bumped to ${newSeverity.toFixed(1)} (${band})` `` — both the number and band come from the SAME computed value.
        - Return `{ status: 'clustered', parentTicketId, newSeverity }` — do NOT create a new ticket.
     3. **If no nearby tickets (unique report)**:
        - Create new ticket as in Plan 3.2 (clusterBonus = 0).
