@@ -1,18 +1,18 @@
 # STATE.md — CivixAgent Session Memory
 
 > **Last Updated**: 2026-06-28
-> **Current Phase**: Phase 4 EXECUTION COMPLETE
-> **Next Action**: /plan 5
+> **Current Phase**: Phase 5 PLANNING COMPLETE
+> **Next Action**: /execute 5
 
 ---
 
 ## Current Position
-- **Phase**: 4
-- **Task**: Phase complete
-- **Status**: Ready for next phase
+- **Phase**: 5
+- **Task**: Planning complete
+- **Status**: Ready for execution
 
 ## Next Steps
-1. /plan 5 — Citizen Engagement and Closed-Loop Resolution
+1. /execute 5 — Implement Citizen Engagement and Closed-Loop Resolution
 
 ---
 
