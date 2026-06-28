@@ -59,6 +59,14 @@ export default function TicketDetail({ ticket, onClose, persona, currentUser }) 
               SEV {ticket.severity}/10
             </span>
           )}
+          {ticket.duplicateCount > 1 && (
+            <span className="px-2.5 py-1 text-xs font-bold rounded-full border bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30 flex items-center gap-1" title="Cluster Reinforcement (Multiple Reports Merged)">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              {ticket.duplicateCount} REPORTS
+            </span>
+          )}
         </div>
 
         {/* Photo */}

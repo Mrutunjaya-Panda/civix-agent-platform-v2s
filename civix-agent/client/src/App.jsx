@@ -5,6 +5,7 @@ import Map from './components/Map'
 import PersonaSwitcher from './components/PersonaSwitcher'
 import TicketDetail from './components/TicketDetail'
 import ReportModal from './components/ReportModal'
+import ActivityFeed from './components/ActivityFeed'
 import { useTickets } from './hooks/useTickets'
 
 function App() {
@@ -19,6 +20,11 @@ function App() {
   const prevTicketsRef = useRef([]);
 
   const { tickets, loading, error } = useTickets()
+
+  // Compute the live active ticket from the tickets array to fix the stale state bug
+  const activeTicket = selectedTicket 
+    ? tickets.find(t => t.id === selectedTicket.id) || selectedTicket 
+    : null;
 
   useEffect(() => {
     silentSignIn().then(user => {
@@ -78,9 +84,9 @@ function App() {
       {/* Overlays */}
       <PersonaSwitcher persona={persona} setPersona={setPersona} />
 
-      {selectedTicket && (
+      {activeTicket && (
         <TicketDetail 
-          ticket={selectedTicket} 
+          ticket={activeTicket} 
           onClose={() => setSelectedTicket(null)} 
           persona={persona}
           currentUser={firebaseUser}
@@ -151,6 +157,9 @@ function App() {
           {toastMessage}
         </div>
       )}
+
+      {/* Agent Transparency Panel */}
+      <ActivityFeed />
     </div>
   )
 }
