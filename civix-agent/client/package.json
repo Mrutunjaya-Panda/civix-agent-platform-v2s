@@ -4,10 +4,10 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "node \"D:/Antigravity IDE & Projects/Projects/v2s-community-hero/civix-agent/client/node_modules/vite/bin/vite.js\"",
-        "build": "node \"D:/Antigravity IDE & Projects/Projects/v2s-community-hero/civix-agent/client/node_modules/vite/bin/vite.js\" build",
+        "dev": "vite",
+        "build": "vite build",
         "lint": "oxlint",
-        "preview": "node \"D:/Antigravity IDE & Projects/Projects/v2s-community-hero/civix-agent/client/node_modules/vite/bin/vite.js\" preview"
+        "preview": "vite preview"
     },
     "dependencies": {
         "browser-image-compression": "^2.0.2",

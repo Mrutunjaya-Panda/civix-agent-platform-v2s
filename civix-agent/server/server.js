@@ -51,13 +51,29 @@ app.get('/api/firebase-test', async (req, res) => {
   }
 });
 
+// Helper for gemini test: Fetch image and convert to inlineData
+async function fetchImageInline(url) {
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+  });
+  if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
+  const contentType = response.headers.get('content-type') || 'image/jpeg';
+  const mimeType = contentType.split(';')[0].trim();
+  const arrayBuffer = await response.arrayBuffer();
+  const base64 = Buffer.from(arrayBuffer).toString('base64');
+  return { inlineData: { mimeType, data: base64 } };
+}
+
 // Gemini multimodal test — classifies a test image with responseSchema
 app.post('/api/gemini-test', async (req, res) => {
   try {
     const { imageUrl } = req.body;
 
     // Use a public test image if none provided
-    const testUrl = imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Damaged_road.jpg/320px-Damaged_road.jpg';
+    const testUrl = imageUrl || 'https://picsum.photos/seed/civix/800/600.jpg';
+    const imagePart = await fetchImageInline(testUrl);
 
     const schema = {
       type: 'object',
@@ -72,7 +88,7 @@ app.post('/api/gemini-test', async (req, res) => {
     const result = await structuredCall({
       parts: [
         { text: 'You are a civic issue classifier. Analyze this image and classify the infrastructure problem shown.' },
-        { fileData: { fileUri: testUrl, mimeType: 'image/jpeg' } },
+        imagePart,
       ],
       schema,
       system: 'Classify civic infrastructure issues from photos. Be concise.',
@@ -95,8 +111,12 @@ app.use('/api', confirmRouter);
 if (process.env.NODE_ENV === 'production') {
   const distPath = path.join(__dirname, '../client/dist');
   app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(distPath, 'index.html'));
+  app.use((req, res, next) => {
+    if (req.method === 'GET') {
+      res.sendFile(path.join(distPath, 'index.html'));
+    } else {
+      next();
+    }
   });
 }
 

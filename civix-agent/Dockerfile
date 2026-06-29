@@ -4,10 +4,11 @@ WORKDIR /app/client
 
 # Install deps first (layer cache for npm install)
 COPY client/package*.json ./
-RUN npm ci
+RUN npm install
 
 # Copy source and build
 COPY client/ ./
+RUN cp env-prod.txt ../.env.production
 RUN npm run build
 # Output: /app/client/dist/
 
@@ -17,7 +18,7 @@ WORKDIR /app
 
 # Install server production deps only
 COPY server/package*.json ./server/
-RUN cd server && npm ci --omit=dev
+RUN cd server && npm install --omit=dev
 
 # Copy server source
 COPY server/ ./server/

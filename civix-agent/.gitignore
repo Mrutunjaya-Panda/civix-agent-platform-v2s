@@ -10,6 +10,10 @@ client/build/
 # Secrets — NEVER commit
 .env
 sa.json
+env.yaml
+build-env.yaml
+client/.env.production
+client/env-prod.txt
 
 # Logs
 *.log

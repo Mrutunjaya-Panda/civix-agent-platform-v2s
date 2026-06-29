@@ -1,0 +1,17 @@
+# .gcloudignore — defines what files are uploaded to Cloud Build
+# Ignore local repository history and logs
+.git/
+.gitignore
+*.log
+
+# Ignore dependency directories (huge, should not be uploaded)
+node_modules/
+client/node_modules/
+server/node_modules/
+client/dist/
+
+# Ignore local dotenv secret file
+.env
+
+# EXPLICITLY UPLOAD client/.env.production for Vite build step
+!client/.env.production
