@@ -306,19 +306,23 @@ If developed beyond a hackathon proof-of-concept, the CivixAgent roadmap include
 > [!IMPORTANT]
 > **⚖️ Hackathon-Scope Design Decisions & Production-Readiness Paths**
 > 
+> *Read this section to understand which choices were made for hackathon demo purposes vs. production constraints.*
+> 
 > During the hackathon development of CivixAgent, certain design choices were deliberately simplified to optimize usability, streamline the evaluation process for judges, and prevent dead-ends during demo walkthroughs. These are conscious, engineered tradeoffs with clear paths to production-readiness:
 > 
-> 1. **Shared Worker Passphrase vs. Authenticated Accounts**
->    - *Design Decision:* Municipal Worker Mode currently uses a single shared passphrase rather than individual worker accounts.
->    - *Rationale:* This keeps the demo immediately accessible to judges without requiring the provisioning and sharing of individual worker credentials for evaluation.
->    - *Production Tradeoff:* A shared passphrase means actions cannot be attributed to a specific worker, which compromises real-world accountability.
->    - *Production Fix:* Replace the shared passphrase with individual authenticated worker accounts (e.g., Firebase email/password or SSO tied to municipal employee IDs) so every action is logged against a specific, accountable worker identity.
+> 1. **🔑 Shared Worker Passphrase vs. Authenticated Accounts**
+>    - *⚙️ Design Decision:* Municipal Worker Mode currently uses a single shared passphrase rather than individual worker accounts.
+>    - *💡 Rationale:* This keeps the demo immediately accessible to judges without requiring the provisioning and sharing of individual worker credentials for evaluation.
+>    - *⚠️ Production Tradeoff:* A shared passphrase means actions cannot be attributed to a specific worker, which compromises real-world accountability.
+>    - *🛠️ Production Fix:* Replace the shared passphrase with individual authenticated worker accounts (e.g., Firebase email/password or SSO tied to municipal employee IDs) so every action is logged against a specific, accountable worker identity.
 > 
-> 2. **Auto-Close Without Human Review**
->    - *Design Decision:* The 72-hour citizen-confirmation timeout currently auto-closes a resolved ticket with no human review step.
->    - *Rationale:* This exists specifically to demonstrate the full ticket lifecycle without dead-end states during a short demo window.
->    - *Production Tradeoff:* In production, an unreviewed auto-close could finalize a dispute the citizen never actually confirmed was fixed.
->    - *Production Fix:* Route timed-out, unconfirmed tickets to a human supervisor review queue instead of auto-closing silently.
+> ---
+> 
+> 2. **⏱️ Auto-Close Without Human Review**
+>    - *⚙️ Design Decision:* The 72-hour citizen-confirmation timeout currently auto-closes a resolved ticket with no human review step.
+>    - *💡 Rationale:* This exists specifically to demonstrate the full ticket lifecycle without dead-end states during a short demo window.
+>    - *⚠️ Production Tradeoff:* In production, an unreviewed auto-close could finalize a dispute the citizen never actually confirmed was fixed.
+>    - *🛠️ Production Fix:* Route timed-out, unconfirmed tickets to a human supervisor review queue instead of auto-closing silently.
 
 ---
 
