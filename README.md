@@ -1,6 +1,7 @@
 # CivixAgent 🏛️🤖
 
 [![Hackathon: Vibe2Ship](https://img.shields.io/badge/Hackathon-Vibe2Ship-blueviolet?style=flat-square)](https://github.com/Mrutunjaya-Panda/civix-agent-platform-v2s)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Online-success?logo=google-cloud&style=flat-square)](https://civix-agent-934098648599.us-central1.run.app/)
 [![React](https://img.shields.io/badge/React-18.x-61dafb?logo=react&style=flat-square)](#)
 [![Vite](https://img.shields.io/badge/Vite-5.x-646cff?logo=vite&style=flat-square)](#)
 [![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?logo=node.js&style=flat-square)](#)
@@ -83,6 +84,16 @@ Follow these step-by-step instructions to experience the full capabilities of Ci
 4. Click **"Confirm Resolution"** to permanently close the ticket and change its status to **`CLOSED`**.
 > [!NOTE]
 > **Auto-Close Inactivity Timeout:** If the citizen does not manually confirm a resolution, the ticket will automatically transition to `CLOSED` after **72 hours** of simulated time.
+
+### Step 6: Reset Demo Data 🔄 (Worker Only)
+If you want to clear your test data and restart the demonstration from a clean slate, you can restore the default seeding:
+1. Switch the persona switcher in the top-right corner of the screen to **"Worker"** (passphrase: `civix2026`).
+2. Inside the **Persona Switcher** panel, look for the **"Admin Controls"** section at the bottom.
+3. Click the **"Reset Demo Data"** button.
+4. Confirm the destructive action by clicking **"Confirm Reset"** to trigger the system reinitialization.
+
+> [!TIP]
+> **What the Reset Does & Why it Exists:** This instantly wipes all current ticket and activity data from the database and restores the original curated demo dataset (the same 20 seeded reports with the pre-built stalled, escalated, and resolved-awaiting-confirmation scenarios). It exists so that evaluators or repeated demo sessions can always start from a clean, consistent state rather than accumulating test clutter.
 
 ---
 

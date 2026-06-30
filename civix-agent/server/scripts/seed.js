@@ -38,7 +38,7 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 1,
-    imageUrl: 'https://loremflickr.com/800/600/streetlight,broken,night/all',
+    imageUrl: 'https://loremflickr.com/800/600/streetlight,broken,night/all?lock=101',
     reasoning: 'Non-critical lighting issue in a public space. Low impact on immediate safety.',
     brief: {
       card: { title: 'STALLED: Minor Lighting Issue', summary: 'Blinking streetlight. No safety risk.', priority_actions: ['Schedule maintenance'] },
@@ -59,7 +59,7 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 3, // Shows cluster reinforcement
-    imageUrl: 'https://loremflickr.com/800/600/sinkhole,road,damage/all',
+    imageUrl: 'https://loremflickr.com/800/600/sinkhole,road,damage/all?lock=102',
     reasoning: 'Critical infrastructure failure blocking traffic. High risk of injury.',
     brief: {
       card: { title: 'URGENT: Major Road Collapse', summary: 'Sinkhole blocking main transit artery.', priority_actions: ['Dispatch emergency barricades', 'Reroute traffic', 'Assess structural damage'] },
@@ -81,7 +81,7 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 1,
-    imageUrl: 'https://loremflickr.com/800/600/flood,street,leak/all',
+    imageUrl: 'https://loremflickr.com/800/600/flood,street,leak/all?lock=103',
     repairImageUrl: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=800&auto=format&fit=crop', // Stock fixed pipe
     agentRecap: 'The uploaded image confirms the pipe has been sealed and the flooding is contained. Resolution verified.',
     reasoning: 'Active water leak wasting resources and causing localized flooding. Moderate severity.',
@@ -121,7 +121,7 @@ for (let i = 4; i <= 6; i++) {
   });
 }
 
-async function runSeed() {
+async function runSeed(isCli = false) {
   console.log('🌱 Starting database seed...');
   
   try {
@@ -162,11 +162,16 @@ async function runSeed() {
     });
 
     console.log('✅ Seed complete!');
-    process.exit(0);
+    if (isCli) process.exit(0);
   } catch (err) {
     console.error('❌ Seed failed:', err);
-    process.exit(1);
+    if (isCli) process.exit(1);
+    throw err;
   }
 }
 
-runSeed();
+if (require.main === module) {
+  runSeed(true);
+}
+
+module.exports = { runSeed };

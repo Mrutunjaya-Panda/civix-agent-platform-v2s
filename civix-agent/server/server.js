@@ -12,6 +12,7 @@ const reportRouter = require('./routes/report');
 const escalationRouter = require('./routes/escalation');
 const verifyRouter = require('./routes/verify');
 const confirmRouter = require('./routes/confirm');
+const resetRouter = require('./routes/reset');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -105,6 +106,7 @@ app.use('/api', reportRouter);
 app.use('/api', escalationRouter);
 app.use('/api', verifyRouter);
 app.use('/api', confirmRouter);
+app.use('/api', resetRouter);
 
 // ── Production static serving ─────────────────────────────────────────────────
 // IMPORTANT: Must come AFTER all /api routes

@@ -76,6 +76,7 @@ router.post('/simulate-time', async (req, res) => {
 
       if (needsEscalation) {
         updates.status = newStatus;
+        updates.escalatedAtAge = newAge; // Track escalation time for the 72h auto-close countdown
         
         // Background generation of urgent brief
         // Since we are iterating, we will generate the brief inline. 

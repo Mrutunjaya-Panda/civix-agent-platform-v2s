@@ -191,7 +191,7 @@ function App() {
       )}
 
       {/* Agent Transparency Panel */}
-      <ActivityFeed />
+      <ActivityFeed activeTicketId={activeTicket?.id} />
 
       {/* Project Overview Modal */}
       {showProjectOverview && (

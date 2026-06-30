@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useActivityFeed } from '../hooks/useActivityFeed';
 
-export default function ActivityFeed() {
+export default function ActivityFeed({ activeTicketId }) {
   const [isOpen, setIsOpen] = useState(true);
   const { feed } = useActivityFeed(20);
   const feedEndRef = useRef(null);
@@ -67,8 +67,13 @@ export default function ActivityFeed() {
             </p>
             
             {entry.ticketId && (
-              <span className="inline-block mt-2 text-[10px] font-mono text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded">
+              <span className={`inline-block mt-2 text-[10px] font-mono px-2 py-0.5 rounded border ${
+                activeTicketId === entry.ticketId 
+                  ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/50' 
+                  : 'bg-white/5 text-slate-400 border-white/10'
+              }`}>
                 Ref: #{entry.ticketId.slice(0, 8)}
+                {activeTicketId === entry.ticketId && ' (Viewing)'}
               </span>
             )}
           </div>
