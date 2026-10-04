@@ -8,7 +8,7 @@ RUN npm install
 
 # Copy source and build
 COPY client/ ./
-RUN cp env-prod-upload.txt ../.env.production
+# RUN cp env-prod-upload.txt ../.env.production
 RUN npm run build
 # Output: /app/client/dist/
 
