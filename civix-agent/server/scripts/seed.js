@@ -5,6 +5,13 @@ const { db } = require('../firebase');
 const BHUBANESWAR_CENTER = { lat: 20.2960, lng: 85.8245 };
 const USER_ID = 'demo-citizen-123';
 
+const DEMO_IMAGES = {
+  image1: 'https://res.cloudinary.com/dozoeunif/image/upload/v1782619338/jogaefu5bwnxiw7tk7z6.jpg',
+  image2: 'https://res.cloudinary.com/dozoeunif/image/upload/v1782796457/pkvhxxkcoh3za4k5qwow.png',
+  utilityPole: 'https://res.cloudinary.com/dozoeunif/image/upload/v1791138274/utility-pole-leans-precarious-angle-appearing-to-have-snapped-become-uprooted-ground-as-weighed-down-451644726_tgywkf.webp',
+  streetlight: 'https://res.cloudinary.com/dozoeunif/image/upload/v1791138415/streetlight_foxfgr.jpg'
+};
+
 // Generate random coords around center (rough approximation ~5km radius)
 function randomLocation() {
   const r = 5000 / 111300; // = 0.045 degrees
@@ -38,7 +45,8 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 1,
-    imageUrl: 'https://loremflickr.com/800/600/streetlight,broken,night/all?lock=101',
+    // imageUrl: 'https://loremflickr.com/800/600/streetlight,broken,night/all?lock=101',
+    imageUrl: DEMO_IMAGES.streetlight,
     reasoning: 'Non-critical lighting issue in a public space. Low impact on immediate safety.',
     brief: {
       card: { title: 'STALLED: Minor Lighting Issue', summary: 'Blinking streetlight. No safety risk.', priority_actions: ['Schedule maintenance'] },
@@ -59,7 +67,8 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 3, // Shows cluster reinforcement
-    imageUrl: 'https://loremflickr.com/800/600/sinkhole,road,damage/all?lock=102',
+    //imageUrl: 'https://loremflickr.com/800/600/sinkhole,road,damage/all?lock=102',
+    imageUrl: DEMO_IMAGES.image1,
     reasoning: 'Critical infrastructure failure blocking traffic. High risk of injury.',
     brief: {
       card: { title: 'URGENT: Major Road Collapse', summary: 'Sinkhole blocking main transit artery.', priority_actions: ['Dispatch emergency barricades', 'Reroute traffic', 'Assess structural damage'] },
@@ -81,7 +90,8 @@ const seedData = [
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 1,
-    imageUrl: 'https://loremflickr.com/800/600/flood,street,leak/all?lock=103',
+    //imageUrl: 'https://loremflickr.com/800/600/flood,street,leak/all?lock=103',
+    imageUrl: DEMO_IMAGES.image2,
     repairImageUrl: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?q=80&w=800&auto=format&fit=crop', // Stock fixed pipe
     agentRecap: 'The uploaded image confirms the pipe has been sealed and the flooding is contained. Resolution verified.',
     reasoning: 'Active water leak wasting resources and causing localized flooding. Moderate severity.',
@@ -112,7 +122,8 @@ for (let i = 4; i <= 6; i++) {
     createdAt: timestamp,
     updatedAt: timestamp,
     duplicateCount: 1,
-    imageUrl: `https://loremflickr.com/800/600/street,infrastructure,city/all?lock=${i}`, // unique image per normal ticket
+    //imageUrl: `https://loremflickr.com/800/600/street,infrastructure,city/all?lock=${i}`, // unique image per normal ticket
+    imageUrl: DEMO_IMAGES.utilityPole,
     reasoning: `Triage AI determined this is a severity ${sev} ${cat} issue.`,
     brief: {
       card: { title: `Standard ${cat} Issue`, summary: 'Routine maintenance required.', priority_actions: ['Inspect', 'Repair'] },
