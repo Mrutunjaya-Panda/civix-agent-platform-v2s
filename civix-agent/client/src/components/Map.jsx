@@ -1,6 +1,6 @@
 /**
  * Map.jsx — React-Leaflet map component
- * Uses CartoDB dark tiles (no API key required) + Leaflet.markercluster
+ * Uses CartoDB dark tiles  + Leaflet.markercluster
  * Centered on Master Canteen Square, Bhubaneswar (20.2961°N, 85.8245°E)
  */
 import { useEffect, useRef } from 'react'
@@ -122,9 +122,10 @@ export default function Map({ tickets = [], onMarkerClick }) {
         attributionControl={true}
       >
         <ZoomControl position="bottomright" />
-        {/* CartoDB Dark Matter tiles — no API key, free for hackathons */}
+        {/* CartoDB Dark Matter tiles */}
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          //url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+          url={`https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_CARTO_BASEMAP_KEY}`}
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>'
           subdomains="abcd"
           maxZoom={20}
